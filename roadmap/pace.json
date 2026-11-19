@@ -1,0 +1,20 @@
+{
+  "contractVersion": 3,
+  "generator": "scripts/pace.mjs",
+  "generatedAt": "2026-11-19T23:25:44Z",
+  "inputs": {
+    "sessionGapMinutes": 60,
+    "windowDays": 4,
+    "rollingDays": 14,
+    "dailyCapHours": 10,
+    "simulationSeed": 20261031,
+    "commits": 1,
+    "cycleCommits": 0,
+    "cycleIntervals": 0,
+    "activeDays": 1,
+    "sizeSamples": []
+  },
+  "status": "insufficient",
+  "reason": "too_few_active_days",
+  "results": []
+}
