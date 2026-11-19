@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Workspace — ClickChain roadmap</title>
+<style>
+  :root { --bg: #14161a; --ink: #e8eaed; --muted: #a9b0bb; --line: #6b7280; --card: #1f232a; --edge: #8b94a3; --title-bg: #2b2347; --alert-bg: #3b1c20; --title-edge: #8a7bc0; --alert-edge: #e06a6a; --status-solved: #7ee0a0; --status-now: #ffd166; --status-next: #8ab4ff; --status-blocked: #ff8f80; --status-paused: #c9a7ff; --status-merged: #5fd7e6; --chrome-bg: #05050a; --chrome-ink: #fafafa; --chrome-muted: #8c8c8c; --chrome-line: #2b2b2b; --accent-fill: #071719; --accent-outline: #19b8a3; --focus-ring: #14b8a5; --row-hover: #101015; --radius: 10px; --label-size: 11px; --label-tracking: .08em; --label-gap: 8px; --bar-gap: 12px; --bar-pad-y: 10px; --bar-pad-x: 16px; --pill-pad-y: 5px; --pill-pad-x: 10px; --small-size: 12px; --box-max: 760px; --box-pad-y: 12px; --box-pad-x: 16px; --box-gap: 16px; --box-size: 13px; --ring-width: 2px; --ring-offset: 2px; --edge-width: 1px; --dot-size: 8px; --dot-gap: 8px; --dot-radius: 50%; --name-size: 14px; --name-weight: 600; --row-pad-y: 9px; --row-pad-x: 10px; --row-gap: 6px; --goal-size: 12.5px; --solving-size: 12px; --note-gap: 4px; --nav-width: 260px; --nav-pad: 16px; --list-indent: 18px; --label-margin: 6px; --menu-margin-y: 8px; --menu-margin-x: 16px; --menu-pad-y: 6px; --menu-pad-x: 12px; --menu-edge-width: 2px; --menu-radius: 6px; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.4 -apple-system, "Segoe UI", sans-serif; }
+  #main { padding: 24px 16px 40px; overflow-x: auto; }
+  section[aria-label="Roadmap"] > h1 { text-align: center; font-size: 20px; margin: 0 auto 24px; max-width: 320px;
+    background: var(--title-bg); border: 2px solid var(--title-edge); border-radius: 8px; padding: 10px 14px; }
+  section[aria-label="Roadmap"] ul { display: flex; justify-content: safe center; list-style: none; margin: 0; padding: 22px 0 0; position: relative; }
+  section[aria-label="Roadmap"] > ul { padding-top: 0; }
+  section[aria-label="Roadmap"] li { position: relative; padding: 22px 6px 0; display: flex; flex-direction: column; align-items: center; }
+  section[aria-label="Roadmap"] li::before, section[aria-label="Roadmap"] li::after {
+    content: ""; position: absolute; top: 0; width: 50%; height: 22px; border-top: 2px solid var(--line); }
+  section[aria-label="Roadmap"] li::before { right: 50%; }
+  section[aria-label="Roadmap"] li::after { left: 50%; border-left: 2px solid var(--line); }
+  section[aria-label="Roadmap"] li:only-child::before, section[aria-label="Roadmap"] li:only-child::after { display: none; }
+  section[aria-label="Roadmap"] li:only-child { padding-top: 0; }
+  section[aria-label="Roadmap"] li:first-child::before, section[aria-label="Roadmap"] li:last-child::after { border: 0; }
+  section[aria-label="Roadmap"] li:last-child::before { border-right: 2px solid var(--line); }
+  section[aria-label="Roadmap"] ul ul::before { content: ""; position: absolute; top: 0; left: 50%; height: 22px; border-left: 2px solid var(--line); }
+  section[aria-label="Roadmap"] li > div { width: 170px; background: var(--card); border: 2px solid var(--edge); border-radius: 8px; padding: 7px 9px; }
+  section[aria-label="Roadmap"] li > div > span:first-child { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); }
+  section[aria-label="Roadmap"] li > div[data-status="done"] { border-color: var(--status-solved); }
+  section[aria-label="Roadmap"] li > div[data-status="done"] > span:first-child { color: var(--status-solved); }
+  section[aria-label="Roadmap"] li > div[data-status="now"] { border-color: var(--status-now); box-shadow: 0 0 0 2px var(--status-now); }
+  section[aria-label="Roadmap"] li > div[data-status="now"] > span:first-child { color: var(--status-now); }
+  @keyframes pulse-ring { 0%, 100% { box-shadow: 0 0 0 2px var(--status-now), 0 0 0 2px color-mix(in srgb, var(--status-now) 0%, transparent); } 50% { box-shadow: 0 0 0 2px var(--status-now), 0 0 0 8px color-mix(in srgb, var(--status-now) 70%, transparent); } }
+  @property --spin-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+  @keyframes border-spin { to { --spin-angle: 360deg; } }
+  @property --glint { syntax: "<number>"; inherits: false; initial-value: 0; }
+  @keyframes twinkle { to { --glint: 1; } }
+  section[aria-label="Roadmap"] li > div[data-pulse] { border: 3px solid transparent; background: linear-gradient(var(--card), var(--card)) padding-box, conic-gradient(from var(--spin-angle), transparent 0deg, transparent 200deg, var(--status-now) 270deg, color-mix(in srgb, white calc(var(--glint) * 100%), var(--status-now)) 335deg, color-mix(in srgb, white calc(60% + var(--glint) * 40%), var(--status-now)) 357deg, transparent 360deg) border-box; filter: drop-shadow(0 0 calc(var(--glint) * 7px) white); animation: pulse-ring 2s ease-in-out infinite, border-spin 3.5s linear infinite, twinkle 0.6s ease-in-out infinite alternate; }
+  @media (prefers-reduced-motion: reduce) { section[aria-label="Roadmap"] li > div[data-pulse] { animation: none; } }
+  :root[data-motion="off"] section[aria-label="Roadmap"] li > div[data-pulse] { animation: none; }
+  section[aria-label="Roadmap"] li > div[data-status="next"] { border-color: var(--status-next); border-style: dashed; }
+  section[aria-label="Roadmap"] li > div[data-status="next"] > span:first-child { color: var(--status-next); }
+  section[aria-label="Roadmap"] li > div[data-status="next"][data-started] { border-style: solid; }
+  [data-visually-hidden] { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; text-transform: none; }
+  section[aria-label="Roadmap"] li > div[data-status="blocked"] { border-color: var(--status-blocked); box-shadow: 0 0 0 2px var(--status-blocked); }
+  section[aria-label="Roadmap"] li > div[data-status="blocked"] > span:first-child { color: var(--status-blocked); }
+  section[aria-label="Roadmap"] li > div[data-status="paused"] { border-color: var(--status-paused); border-style: dotted; }
+  section[aria-label="Roadmap"] li > div[data-status="paused"] > span:first-child { color: var(--status-paused); }
+  section[aria-label="Roadmap"] li > div[data-status="merged"] { border-color: var(--status-merged); border-style: double; border-width: 4px; }
+  section[aria-label="Roadmap"] li > div[data-status="merged"] > span:first-child { color: var(--status-merged); }
+  section[aria-label="Roadmap"] li > div > div[role="group"] { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); }
+  section[aria-label="Roadmap"] li > div > div[role="group"] > span { display: block; margin-top: 3px; }
+  section[aria-label="Roadmap"] li > div > p { margin: 6px 0 0; font-size: 12px; font-weight: 600; color: var(--ink); }
+  section[aria-label="Forecast inputs"], section[aria-label="Parked for later"] { max-width: var(--box-max); margin: var(--box-gap) auto 0; padding: var(--box-pad-y) var(--box-pad-x); border: var(--edge-width) solid var(--chrome-line); border-radius: var(--radius); font-size: var(--box-size); color: var(--chrome-muted); }
+  section[aria-label="Forecast inputs"] ul { margin: 0; padding-left: var(--list-indent); }
+  section[aria-label="Parked for later"] > h2 { color: var(--chrome-muted); font-size: var(--label-size); letter-spacing: var(--label-tracking); text-transform: uppercase; margin: 0 0 var(--label-margin); }
+  [role="alert"] { max-width: 520px; margin: 40px auto; padding: 14px 16px; border: 2px solid var(--alert-edge); background: var(--alert-bg); border-radius: 8px; }
+  #main > div > p { text-align: center; color: var(--muted); font-size: 13px; margin-top: 24px; }
+  #main > div > p[role="alert"] { text-align: left; color: var(--ink); font-size: 15px; }
+  @media (max-width: 800px) {
+    section[aria-label="Roadmap"] ul { flex-direction: column; align-items: stretch; padding-left: 18px; }
+    section[aria-label="Roadmap"] li::before, section[aria-label="Roadmap"] li::after, section[aria-label="Roadmap"] ul ul::before { display: none; }
+    section[aria-label="Roadmap"] li > div { width: auto; }
+  }
+  .workspace { display: flex; align-items: flex-start; }
+  nav[aria-label="Products"] { flex: 0 0 var(--nav-width); min-height: 100vh; padding: var(--nav-pad); background: var(--chrome-bg); border-right: var(--edge-width) solid var(--chrome-line); }
+  @media (min-width: 801px) { nav[aria-label="Products"] { position: sticky; top: 0; height: 100vh; overflow-y: auto; overscroll-behavior: contain; } }
+  nav[aria-label="Products"]::before { content: "Products" / ""; display: block; margin-bottom: var(--label-gap); font-size: var(--label-size); letter-spacing: var(--label-tracking); text-transform: uppercase; color: var(--chrome-muted); }
+  nav[aria-label="Products"] ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--row-gap); }
+  nav[aria-label="Products"] li { position: relative; border-radius: var(--radius); padding: var(--row-pad-y) var(--row-pad-x); }
+  nav[aria-label="Products"] li:hover { background: var(--row-hover); }
+  nav[aria-label="Products"] h2 { margin: 0; font-size: var(--name-size); font-weight: var(--name-weight); }
+  nav[aria-label="Products"] p { margin: var(--note-gap) 0 0 calc(var(--dot-size) + var(--dot-gap)); font-size: var(--goal-size); color: var(--chrome-muted); }
+  nav[aria-label="Products"] p:last-child { font-size: var(--solving-size); }
+  nav[aria-label="Products"] li:has(> h2 > a[aria-current="page"]) { outline: var(--edge-width) solid var(--accent-outline); outline-offset: calc(-1 * var(--edge-width)); background: var(--accent-fill); }
+  @media (forced-colors: active) { nav[aria-label="Products"] li:has(> h2 > a[aria-current="page"]) { outline-color: Highlight; } }
+  nav[aria-label="Products"] a { color: var(--chrome-ink); text-decoration: none; }
+  nav[aria-label="Products"] a::before { content: "" / ""; display: inline-block; width: var(--dot-size); height: var(--dot-size); margin-right: var(--dot-gap); border-radius: var(--dot-radius); background: var(--accent-outline); }
+  nav[aria-label="Products"] a::after { content: "" / ""; position: absolute; inset: 0; }
+  nav[aria-label="Products"] a:focus-visible, #read-at button:focus-visible, #products-menu:focus-visible { outline: var(--ring-width) solid var(--focus-ring); outline-offset: var(--ring-offset); }
+  #workspace-tree { flex: 1; min-width: 0; }
+  #read-at { display: flex; align-items: center; gap: var(--bar-gap); padding: var(--bar-pad-y) var(--bar-pad-x); border-bottom: var(--edge-width) solid var(--chrome-line); font-size: var(--small-size); color: var(--chrome-muted); }
+  #read-at p { margin: 0; flex: 1; }
+  #read-at button { font: inherit; font-size: var(--small-size); color: var(--chrome-ink); background: var(--accent-fill); border: var(--edge-width) solid var(--accent-outline); border-radius: var(--radius); padding: var(--pill-pad-y) var(--pill-pad-x); }
+  #products-menu { display: none; margin: var(--menu-margin-y) var(--menu-margin-x); padding: var(--menu-pad-y) var(--menu-pad-x); font: inherit; color: var(--ink); background: var(--card); border: var(--menu-edge-width) solid var(--edge); border-radius: var(--menu-radius); }
+  @media (max-width: 800px) {
+    #products-menu { display: block; }
+    #read-at { flex-wrap: wrap; }
+    nav[aria-label="Products"] { display: none; }
+    nav[aria-label="Products"][data-open] { display: block; }
+  }
+</style>
+</head>
+<body>
+<button type="button" id="products-menu" aria-controls="products" aria-expanded="false">Products</button>
+<div class="workspace">
+<nav aria-label="Products" id="products"></nav>
+<div id="workspace-tree">
+<div id="read-at"></div>
+<main id="main"></main>
+</div>
+</div>
+<script type="module">
+  import { startWorkspace } from "../src/workspace.js";
+
+  await startWorkspace(document, {
+    fetch: (path, options) => fetch(new URL(`../${path}`, location.href), options),
+    search: location.search,
+    history,
+    schedule: (fn, ms) => setTimeout(fn, ms),
+    isHidden: () => document.hidden,
+    now: () => new Date().toISOString(),
+    emit: (event) => console.info(JSON.stringify(event)),
+  });
+</script>
+</body>
+</html>

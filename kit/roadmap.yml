@@ -1,0 +1,197 @@
+# Roadmap workflow template. A product repo copies this file to
+# .github/workflows/roadmap.yml and the built kit to tools/roadmap-kit/.
+name: roadmap
+on:
+  push:
+    paths:
+      - "roadmaps/**"
+      - "tools/roadmap-kit/**"
+      - ".github/workflows/roadmap.yml"
+  pull_request:
+    paths:
+      - "roadmaps/**"
+      - "tools/roadmap-kit/**"
+      - ".github/workflows/roadmap.yml"
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.11.0
+      - name: verify roadmap kit
+        shell: bash
+        env:
+          ROADMAP_KIT_SHA256: ${{ vars.ROADMAP_KIT_SHA256 }}
+        run: |
+          set -euo pipefail
+          cd tools/roadmap-kit
+          if command -v sha256sum > /dev/null; then sum() { sha256sum "$@"; }; else sum() { shasum -a 256 "$@"; }; fi
+          sum -c SHA256SUMS || { echo "roadmap kit file does not match SHA256SUMS"; exit 1; }
+          control_paths="$(LC_ALL=C find . -name '*[[:cntrl:]]*')" || { echo "roadmap kit listing failed"; exit 1; }
+          if [ -n "$control_paths" ]; then
+            echo "roadmap kit holds a path with a control character"
+            exit 1
+          fi
+          symlinks="$(find . -type l)" || { echo "roadmap kit listing failed"; exit 1; }
+          if [ -n "$symlinks" ]; then
+            echo "roadmap kit holds a symlink"
+            exit 1
+          fi
+          kit_paths="$(find . ! -type d ! -path ./SHA256SUMS | sed 's|^\./||' | LC_ALL=C sort)" || { echo "roadmap kit listing failed"; exit 1; }
+          manifest_paths="$(cut -c 67- SHA256SUMS | LC_ALL=C sort)" || { echo "roadmap kit listing failed"; exit 1; }
+          [ -n "$manifest_paths" ] || { echo "roadmap kit listing failed"; exit 1; }
+          unlisted="$(LC_ALL=C comm -23 <(printf '%s\n' "$kit_paths") <(printf '%s\n' "$manifest_paths"))"
+          if [ -n "$unlisted" ]; then
+            echo "roadmap kit holds files SHA256SUMS does not list"
+            exit 1
+          fi
+          kit_hash="$(sum SHA256SUMS | cut -d ' ' -f 1)"
+          if [ "$kit_hash" != "$ROADMAP_KIT_SHA256" ]; then
+            echo "roadmap kit hash does not match ROADMAP_KIT_SHA256"
+            exit 1
+          fi
+      - name: validate roadmaps
+        shell: bash
+        run: |
+          for roadmap_dir in roadmaps/*/; do
+            node tools/roadmap-kit/scripts/roadmap-kit.mjs validate "$roadmap_dir"
+          done
+      - name: pace roadmaps
+        shell: bash
+        run: |
+          for roadmap_dir in roadmaps/*/; do
+            node tools/roadmap-kit/scripts/roadmap-kit.mjs pace "$roadmap_dir"
+          done
+  publish-staging:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: staging
+    if: github.event_name == 'push' && github.ref_type == 'branch' && github.ref_name == github.event.repository.default_branch
+    concurrency:
+      group: roadmap-publish-staging
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.11.0
+      - name: verify roadmap kit
+        shell: bash
+        env:
+          ROADMAP_KIT_SHA256: ${{ vars.ROADMAP_KIT_SHA256 }}
+        run: |
+          set -euo pipefail
+          cd tools/roadmap-kit
+          if command -v sha256sum > /dev/null; then sum() { sha256sum "$@"; }; else sum() { shasum -a 256 "$@"; }; fi
+          sum -c SHA256SUMS || { echo "roadmap kit file does not match SHA256SUMS"; exit 1; }
+          control_paths="$(LC_ALL=C find . -name '*[[:cntrl:]]*')" || { echo "roadmap kit listing failed"; exit 1; }
+          if [ -n "$control_paths" ]; then
+            echo "roadmap kit holds a path with a control character"
+            exit 1
+          fi
+          symlinks="$(find . -type l)" || { echo "roadmap kit listing failed"; exit 1; }
+          if [ -n "$symlinks" ]; then
+            echo "roadmap kit holds a symlink"
+            exit 1
+          fi
+          kit_paths="$(find . ! -type d ! -path ./SHA256SUMS | sed 's|^\./||' | LC_ALL=C sort)" || { echo "roadmap kit listing failed"; exit 1; }
+          manifest_paths="$(cut -c 67- SHA256SUMS | LC_ALL=C sort)" || { echo "roadmap kit listing failed"; exit 1; }
+          [ -n "$manifest_paths" ] || { echo "roadmap kit listing failed"; exit 1; }
+          unlisted="$(LC_ALL=C comm -23 <(printf '%s\n' "$kit_paths") <(printf '%s\n' "$manifest_paths"))"
+          if [ -n "$unlisted" ]; then
+            echo "roadmap kit holds files SHA256SUMS does not list"
+            exit 1
+          fi
+          kit_hash="$(sum SHA256SUMS | cut -d ' ' -f 1)"
+          if [ "$kit_hash" != "$ROADMAP_KIT_SHA256" ]; then
+            echo "roadmap kit hash does not match ROADMAP_KIT_SHA256"
+            exit 1
+          fi
+      - name: pace roadmaps
+        shell: bash
+        run: |
+          for roadmap_dir in roadmaps/*/; do
+            node tools/roadmap-kit/scripts/roadmap-kit.mjs pace "$roadmap_dir"
+          done
+      - name: publish roadmaps
+        shell: bash
+        env:
+          SHARE_PUBLISH_KEY: ${{ secrets.SHARE_PUBLISH_KEY }}
+          SHARE_URL: ${{ vars.SHARE_URL }}
+        run: |
+          for roadmap_dir in roadmaps/*/; do
+            node tools/roadmap-kit/scripts/roadmap-kit.mjs publish --product "$(basename "$roadmap_dir")" --url "$SHARE_URL" "$roadmap_dir"
+          done
+  publish-production:
+    needs: publish-staging
+    runs-on: ubuntu-latest
+    environment: production
+    if: github.event_name == 'push' && github.ref_type == 'branch' && github.ref_name == github.event.repository.default_branch
+    concurrency:
+      group: roadmap-publish-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.11.0
+      - name: verify roadmap kit
+        shell: bash
+        env:
+          ROADMAP_KIT_SHA256: ${{ vars.ROADMAP_KIT_SHA256 }}
+        run: |
+          set -euo pipefail
+          cd tools/roadmap-kit
+          if command -v sha256sum > /dev/null; then sum() { sha256sum "$@"; }; else sum() { shasum -a 256 "$@"; }; fi
+          sum -c SHA256SUMS || { echo "roadmap kit file does not match SHA256SUMS"; exit 1; }
+          control_paths="$(LC_ALL=C find . -name '*[[:cntrl:]]*')" || { echo "roadmap kit listing failed"; exit 1; }
+          if [ -n "$control_paths" ]; then
+            echo "roadmap kit holds a path with a control character"
+            exit 1
+          fi
+          symlinks="$(find . -type l)" || { echo "roadmap kit listing failed"; exit 1; }
+          if [ -n "$symlinks" ]; then
+            echo "roadmap kit holds a symlink"
+            exit 1
+          fi
+          kit_paths="$(find . ! -type d ! -path ./SHA256SUMS | sed 's|^\./||' | LC_ALL=C sort)" || { echo "roadmap kit listing failed"; exit 1; }
+          manifest_paths="$(cut -c 67- SHA256SUMS | LC_ALL=C sort)" || { echo "roadmap kit listing failed"; exit 1; }
+          [ -n "$manifest_paths" ] || { echo "roadmap kit listing failed"; exit 1; }
+          unlisted="$(LC_ALL=C comm -23 <(printf '%s\n' "$kit_paths") <(printf '%s\n' "$manifest_paths"))"
+          if [ -n "$unlisted" ]; then
+            echo "roadmap kit holds files SHA256SUMS does not list"
+            exit 1
+          fi
+          kit_hash="$(sum SHA256SUMS | cut -d ' ' -f 1)"
+          if [ "$kit_hash" != "$ROADMAP_KIT_SHA256" ]; then
+            echo "roadmap kit hash does not match ROADMAP_KIT_SHA256"
+            exit 1
+          fi
+      - name: pace roadmaps
+        shell: bash
+        run: |
+          for roadmap_dir in roadmaps/*/; do
+            node tools/roadmap-kit/scripts/roadmap-kit.mjs pace "$roadmap_dir"
+          done
+      - name: publish roadmaps
+        shell: bash
+        env:
+          SHARE_PUBLISH_KEY: ${{ secrets.SHARE_PUBLISH_KEY }}
+          SHARE_URL: ${{ vars.SHARE_URL }}
+        run: |
+          for roadmap_dir in roadmaps/*/; do
+            node tools/roadmap-kit/scripts/roadmap-kit.mjs publish --product "$(basename "$roadmap_dir")" --url "$SHARE_URL" "$roadmap_dir"
+          done

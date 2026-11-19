@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "products": [
+    {
+      "id": "garden-planner",
+      "name": "Community Garden Planner",
+      "status": "active",
+      "roadmapRoot": "roadmap"
+    },
+    {
+      "id": "seed-library",
+      "name": "Seed Library",
+      "status": "active",
+      "roadmapRoot": "products/seed-library/roadmap"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portfolio</title>
+</head>
+<body>
+<main>
+<h1>Portfolio</h1>
+<div id="app"></div>
+</main>
+<script type="module">
+  import { loadPortfolio } from "../src/portfolio.js";
+  import { renderPortfolio } from "../src/render.js";
+
+  const io = {
+    fetch: (path, options) => fetch(new URL(`../${path}`, location.href), options),
+    now: () => new Date().toISOString(),
+  };
+  const results = await loadPortfolio(io);
+  document.getElementById("app").appendChild(renderPortfolio(document, results));
+</script>
+</body>
+</html>

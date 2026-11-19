@@ -1,0 +1,8 @@
+{"at": "2026-11-03T10:00:00-08:00", "problemId": "sl-001", "actor": "Product Coach", "action": "coach-add", "before": null, "after": "now", "why": "Seeded from a walk-through with the library's volunteers"}
+{"at": "2026-11-03T10:00:00-08:00", "problemId": "sl-002", "actor": "Product Coach", "action": "coach-add", "before": null, "after": "next", "why": "Seeded from a walk-through with the library's volunteers"}
+{"at": "2026-11-03T10:00:00-08:00", "problemId": "sl-003", "actor": "Product Coach", "action": "coach-add", "before": null, "after": "next", "why": "Seeded from a walk-through with the library's volunteers"}
+{"at": "2026-11-03T10:15:00-08:00", "problemId": "sl-001", "actor": "Product Coach", "action": "coach-estimate", "before": null, "after": {"value": 5, "size": 2}, "why": "First estimate: a simple list members can search"}
+{"at": "2026-11-03T10:15:00-08:00", "problemId": "sl-002", "actor": "Product Coach", "action": "coach-estimate", "before": null, "after": {"value": 8, "size": 3}, "why": "First estimate: removes the need for a volunteer at the desk"}
+{"at": "2026-11-03T10:15:00-08:00", "problemId": "sl-003", "actor": "Product Coach", "action": "coach-estimate", "before": null, "after": {"value": 5, "size": 3}, "why": "First estimate: keeps the stock count honest"}
+{"at": "2026-11-09T14:00:00-08:00", "problemId": "sl-001", "actor": "Product Coach", "action": "coach-confirm-done", "before": "now", "after": "done", "why": "Checked against the problem statement: a member found tomato seeds in stock in under a minute"}
+{"at": "2026-11-10T09:00:00-08:00", "problemId": "sl-002", "actor": "Tech Coach", "action": "coach-status", "before": "next", "after": "now", "why": "Catalogue is done; checkout starts"}

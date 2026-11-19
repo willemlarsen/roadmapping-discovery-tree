@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "productId": "clickchain-platform",
+  "sourceRevision": "0123abc",
+  "generatedAt": "2026-11-06T10:00:00Z",
+  "sourceCommittedAt": "2026-11-06T09:00:00Z",
+  "goal": "Ship the shared roadmap",
+  "nodes": [
+    {
+      "id": "root",
+      "parent": null,
+      "problem": "Show the roadmap",
+      "status": "done",
+      "order": 0,
+      "doneOn": "2026-11-05"
+    }
+  ]
+}

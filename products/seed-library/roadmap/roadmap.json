@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "goal": "Members can borrow seeds and return saved seeds without a volunteer on site",
+  "wipLimit": 1,
+  "staleAfterDays": 7,
+  "problems": [
+    {
+      "id": "sl-001",
+      "parent": null,
+      "problem": "Find which seeds are in stock",
+      "status": "done",
+      "statusSince": "2026-11-09",
+      "order": 1,
+      "slices": ["seed-catalogue"],
+      "waitingOn": null,
+      "resumesAfter": null,
+      "doneOn": "2026-11-09",
+      "confirmedBy": "Product Coach",
+      "value": 5,
+      "size": 2
+    },
+    {
+      "id": "sl-002",
+      "parent": null,
+      "problem": "Check out a packet with a member card",
+      "status": "now",
+      "statusSince": "2026-11-10",
+      "order": 2,
+      "slices": ["checkout"],
+      "waitingOn": null,
+      "resumesAfter": null,
+      "value": 8,
+      "size": 3
+    },
+    {
+      "id": "sl-003",
+      "parent": null,
+      "problem": "Log saved seeds when members return them",
+      "status": "next",
+      "statusSince": "2026-11-03",
+      "order": 3,
+      "slices": ["returns-log"],
+      "waitingOn": null,
+      "resumesAfter": null,
+      "value": 5,
+      "size": 3
+    }
+  ]
+}

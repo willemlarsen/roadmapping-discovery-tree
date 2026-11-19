@@ -1,0 +1,60 @@
+{
+  "words": {
+    "now": "Solving now",
+    "next": "Next",
+    "merged": "Merged, awaiting check",
+    "donePrefix": "Solved ✓"
+  },
+  "pausedMark": "⏸",
+  "parkedHeading": "Parked for later",
+  "borders": {
+    "done": {
+      "borderColor": "--status-solved",
+      "borderStyle": "solid",
+      "borderWidth": "2px",
+      "boxShadow": false
+    },
+    "now": {
+      "borderColor": "--status-now",
+      "borderStyle": "solid",
+      "borderWidth": "2px",
+      "boxShadow": true
+    },
+    "next": {
+      "borderColor": "--status-next",
+      "borderStyle": "dashed",
+      "borderWidth": "2px",
+      "boxShadow": false
+    },
+    "blocked": {
+      "borderColor": "--status-blocked",
+      "borderStyle": "solid",
+      "borderWidth": "2px",
+      "boxShadow": true
+    },
+    "paused": {
+      "borderColor": "--status-paused",
+      "borderStyle": "dotted",
+      "borderWidth": "2px",
+      "boxShadow": false
+    },
+    "merged": {
+      "borderColor": "--status-merged",
+      "borderStyle": "double",
+      "borderWidth": "4px",
+      "boxShadow": false
+    }
+  },
+  "sources": [
+    {
+      "path": "src/render.js",
+      "commit": "b2eb836",
+      "sha256": "b4dbcdc2d45d587e5ed3fa8e2d93330d448539e753a957519241e82f07b9d201"
+    },
+    {
+      "path": "strip/index.html",
+      "commit": "b2eb836",
+      "sha256": "e9153835188b8eb4ad4fbe0080d2602fa524ef7a30bc387337978a1ab293192a"
+    }
+  ]
+}
