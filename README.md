@@ -54,3 +54,7 @@ with status `insufficient` and the page shows no forecast, which is what the sam
 shows until it has that history. Commit `roadmap/pace.json` after regenerating it.
 
 Built by Willem Larsen with AI agents under the ClickChain governance model.
+
+## License
+
+All rights reserved; shared for viewing as a portfolio sample. See `LICENSE`.
