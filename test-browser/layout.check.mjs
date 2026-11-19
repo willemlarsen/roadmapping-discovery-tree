@@ -5,6 +5,7 @@ import { createServer } from "node:http";
 import { mkdtemp, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { extname, join, normalize } from "node:path";
+import { forecastOrder } from "../src/pace/order.js";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 const CHROME = process.env.CHROME_BIN ?? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
@@ -27,6 +28,29 @@ function serveRepo(overrides = new Map(), delays = new Map()) {
   });
   return new Promise((resolve) => server.listen(0, "127.0.0.1", () => resolve(server)));
 }
+
+// The checked-in pace.json is generated from this repo's own git history, which is too short
+// for a forecast, and any real forecast goes stale three days after it is generated. Checks that
+// need forecast words serve the sample roadmap with a pace file made now, listing its cards.
+async function pacedOverrides() {
+  const roadmap = JSON.parse(await readFile(join(ROOT, "roadmap/roadmap.json"), "utf8"));
+  const now = new Date();
+  const day = now.toISOString().slice(0, 10);
+  const results = forecastOrder(roadmap.problems).map(({ id }, index) => ({
+    id, remainingCycles: 5, p50Hours: 2 * (index + 1), p85Hours: 3 * (index + 1), p95Hours: 4 * (index + 1), p50Date: day, p85Date: day,
+  }));
+  const pace = {
+    contractVersion: 3, generator: "scripts/pace.mjs", generatedAt: now.toISOString().replace(/\.\d{3}Z$/, "Z"),
+    inputs: {
+      sessionGapMinutes: 60, windowDays: 4, rollingDays: 14, dailyCapHours: 10, simulationSeed: 20261031,
+      commits: 40, cycleCommits: 30, cycleIntervals: 25, activeDays: 6, sizeSamples: [],
+    },
+    status: "ok", pace: { hoursPerDay: 3.5 }, results,
+  };
+  return new Map([["/roadmap/pace.json", JSON.stringify(pace)]]);
+}
+
+const servePaced = async () => serveRepo(await pacedOverrides());
 
 async function launchChrome() {
   const profile = await mkdtemp(join(tmpdir(), "layout-check-"));
@@ -141,7 +165,7 @@ const OPEN_FEATURE_CARD = `new Promise((resolve) => {
 })`;
 
 test("an open rolled-up feature card, whichever it is, shows its total hours left, no Sequence line, and its Priority line after", async () => {
-  const server = await serveRepo();
+  const server = await servePaced();
   const url = `http://127.0.0.1:${server.address().port}/strip/index.html`;
 
   const card = await inPage(OPEN_FEATURE_CARD, url).finally(() => server.close());
@@ -155,12 +179,15 @@ test("an open rolled-up feature card, whichever it is, shows its total hours lef
   assert.ok(priorityAt > doneAt, `the Priority line does not follow it in ${JSON.stringify(card.lines)}`);
 });
 
+// The sample roadmap's started next feature: one of its two parts is solved.
+const STARTED_CARD = "Welcome new members to the garden";
+
 const CARD_WORDS = `new Promise((resolve) => {
   const giveUpAt = Date.now() + 5000;
   const measure = () => {
     const cards = [...document.querySelectorAll('section[aria-label="Roadmap"] li > div')];
     if (cards.length === 0) return Date.now() < giveUpAt ? setTimeout(measure, 50) : resolve(null);
-    const started = cards.find((card) => card.textContent.includes("Decide scope against a date"));
+    const started = cards.find((card) => card.textContent.includes(${JSON.stringify(STARTED_CARD)}));
     resolve({
       startedStatus: started?.getAttribute("data-status") ?? null,
       startedHasLabel: started ? started.firstElementChild.firstChild.textContent === "Started" && started.firstElementChild.textContent.endsWith(", 1 of 2 parts solved") && started.firstElementChild.querySelector("[data-visually-hidden]").getBoundingClientRect().width <= 1 && getComputedStyle(started.firstElementChild.querySelector("[data-visually-hidden]")).overflow === "hidden" : false,
@@ -172,7 +199,7 @@ const CARD_WORDS = `new Promise((resolve) => {
 })`;
 
 test("a started feature card's label reads Started with the part count as hidden text, and cards show working hours and no dates", async () => {
-  const server = await serveRepo();
+  const server = await servePaced();
   const url = `http://127.0.0.1:${server.address().port}/strip/index.html`;
 
   const words = await inPage(CARD_WORDS, url).finally(() => server.close());
@@ -199,7 +226,7 @@ const BORDER_STYLES = `new Promise((resolve) => {
 })`;
 
 test("a started next card draws a solid border and a plain next card a dashed one, as computed in the browser", async () => {
-  const server = await serveRepo();
+  const server = await servePaced();
   const url = `http://127.0.0.1:${server.address().port}/strip/index.html`;
 
   const styles = await inPage(BORDER_STYLES, url).finally(() => server.close());
@@ -211,7 +238,7 @@ const STARTED_LABEL = `new Promise((resolve) => {
   const giveUpAt = Date.now() + 5000;
   const find = () => {
     const cards = [...document.querySelectorAll('section[aria-label="Roadmap"] li > div')];
-    const started = cards.find((card) => card.textContent.includes("Decide scope against a date"));
+    const started = cards.find((card) => card.textContent.includes(${JSON.stringify(STARTED_CARD)}));
     if (!started) return Date.now() < giveUpAt ? setTimeout(find, 50) : resolve(null);
     resolve(started.firstElementChild);
   };
@@ -234,7 +261,7 @@ const chromeLabelText = (url) => withPage(url, async (send) => {
 });
 
 test("a started label's hidden part count reaches Chrome's accessibility tree as written, not upper-cased", async () => {
-  const server = await serveRepo();
+  const server = await servePaced();
   const url = `http://127.0.0.1:${server.address().port}/strip/index.html`;
 
   const exposed = await chromeLabelText(url).finally(() => server.close());

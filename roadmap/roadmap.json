@@ -129,6 +129,43 @@
       "slices": ["planting-calendar"],
       "waitingOn": null,
       "resumesAfter": null
+    },
+    {
+      "id": "gp-007",
+      "parent": null,
+      "problem": "Welcome new members to the garden",
+      "status": "next",
+      "statusSince": "2026-11-08",
+      "order": 7,
+      "slices": ["member-welcome"],
+      "waitingOn": null,
+      "resumesAfter": null,
+      "value": 3,
+      "size": 3
+    },
+    {
+      "id": "gp-071",
+      "parent": "gp-007",
+      "problem": "Show a new member where their plot is",
+      "status": "done",
+      "statusSince": "2026-11-08",
+      "order": 1,
+      "slices": ["member-welcome"],
+      "waitingOn": null,
+      "resumesAfter": null,
+      "doneOn": "2026-11-08",
+      "confirmedBy": "Product Coach"
+    },
+    {
+      "id": "gp-072",
+      "parent": "gp-007",
+      "problem": "Send a welcome note with the garden's rules",
+      "status": "next",
+      "statusSince": "2026-11-08",
+      "order": 2,
+      "slices": ["member-welcome"],
+      "waitingOn": null,
+      "resumesAfter": null
     }
   ]
 }
