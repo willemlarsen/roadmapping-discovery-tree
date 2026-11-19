@@ -1,5 +1,11 @@
 # roadmapping-discovery-tree
 
+[![test](https://github.com/willemlarsen/roadmapping-discovery-tree/actions/workflows/test.yml/badge.svg)](https://github.com/willemlarsen/roadmapping-discovery-tree/actions/workflows/test.yml)
+
+**Try it live:** [discovery tree](https://willemlarsen.github.io/roadmapping-discovery-tree/strip/index.html) · [portfolio](https://willemlarsen.github.io/roadmapping-discovery-tree/strip/portfolio.html) (sample data, served by GitHub Pages)
+
+![The discovery tree for the sample Community Garden Planner roadmap](docs/screenshot.jpg)
+
 A roadmap viewer that shows a product's work as a discovery tree: the goal at the root, the user
 problems beneath it, and the parts of each problem beneath that. Each card shows its status
 (now, next, blocked, paused, parked, done) and its value and size estimate. A decision log
