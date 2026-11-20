@@ -18,9 +18,9 @@ Plain JavaScript (ES modules), `node --test`, no dependencies. Node 24 is what C
 ## What it does, and what it doesn't
 
 The pages are a read-only view. In the workflow this app was built for, the roadmap changes
-through governed work: product and technical coaches (human or AI agent) edit
-`roadmap/roadmap.json` and append to `roadmap/decisions.jsonl`, and people read and steer from the
-tree. So there is no drag and drop, chat, or in-page editing of cards; adding, re-ranking or
+through governed work: product and technical coaches edit `roadmap/roadmap.json` and append to
+`roadmap/decisions.jsonl` (adding, re-ranking, re-estimating or confirming cards), the product owner
+can override, and people read and steer from the tree. So there is no drag and drop, chat, or in-page editing of cards; adding, re-ranking or
 finishing a card is a change to the data files, and the decision log records who made it and why.
 
 ## Sample data
