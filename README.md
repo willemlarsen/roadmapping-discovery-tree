@@ -2,7 +2,7 @@
 
 [![test](https://github.com/willemlarsen/roadmapping-discovery-tree/actions/workflows/test.yml/badge.svg)](https://github.com/willemlarsen/roadmapping-discovery-tree/actions/workflows/test.yml)
 
-**Try it live:** [discovery tree](https://willemlarsen.github.io/roadmapping-discovery-tree/strip/index.html) · [portfolio](https://willemlarsen.github.io/roadmapping-discovery-tree/strip/portfolio.html) (sample data, served by GitHub Pages)
+**See it running:** [discovery tree](https://willemlarsen.github.io/roadmapping-discovery-tree/strip/index.html) · [portfolio](https://willemlarsen.github.io/roadmapping-discovery-tree/strip/portfolio.html) (sample data, served by GitHub Pages)
 
 ![The discovery tree for the sample Community Garden Planner roadmap](docs/screenshot.jpg)
 
