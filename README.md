@@ -71,4 +71,4 @@ Built by Willem Larsen with AI agents under the ClickChain governance model.
 
 ## License
 
-All rights reserved; shared for viewing as a portfolio sample. See `LICENSE`.
+MIT. See `LICENSE`.
