@@ -21,9 +21,26 @@ The page reads three files from one roadmap directory (`roadmap/` by default, or
 ## 2. Layout
 
 The page is a discovery tree: the goal at the root, problems beneath it, and the parts of a
-problem beneath that problem. Siblings are shown in rank order. Each card shows its status and, when
+problem beneath that problem. Siblings are shown in rank order. Each card shows its state and, when
 the data has them, its estimate and its forecast working hours. A work-in-progress line counts
 the `now` cards against the limit, and parked problems are listed apart from the tree.
+
+A card with no parts shows the status written for it. A card with parts shows the state its
+parts give it, whatever status is written for it (`src/displayed-state.js`). Its parts are read
+by what they show, so the rule works up the tree, and parked parts count too. The first line
+that fits decides:
+
+1. A part is in progress (`now` or `merged`): the card shows now.
+2. A part is blocked: blocked.
+3. Every part is done: done.
+4. Every part that is not done is parked: parked.
+5. A part is done or paused, so work has started: paused.
+6. Otherwise: next.
+
+A card showing a state its parts gave it has none of that state's details of its own, so it
+reads plainly: "Waiting" rather than "Waiting on …", "Paused" rather than "Resumes after …",
+"Solved ✓" without a date, or "Parked". When the card's own status already carries the detail,
+the detail shows.
 
 A portfolio page (`strip/portfolio.html`) lists every active product in the registry with the
 problems it is solving now, and links to each product's tree.
