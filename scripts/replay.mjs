@@ -1,12 +1,12 @@
 // Replays a short, made-up sequence of roadmap changes against a COPY of the sample, so a page
 // served from that copy redraws as each change lands. The committed sample files are never touched.
-import { appendFileSync, cpSync, existsSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { appendFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { validateDecisionLog } from "../src/decisions.js";
 import { validateRoadmap } from "../src/validate.js";
 import { GARDEN_STEPS } from "./replay-steps.mjs";
-import { defaultEnd, regenerate } from "./sample-history.mjs";
+import { defaultEnd, regenerate, SAMPLE_PRODUCTS } from "./sample-history.mjs";
 
 // What the pages need to run, copied so the replay never writes to a tracked file.
 const SITE_PARTS = ["strip", "src", "portfolio", "roadmap", "products"];
@@ -31,11 +31,31 @@ function readState(copyDir) {
   return { roadmap, entries };
 }
 
-function writeState(copyDir, { roadmap, lines }) {
-  const roadmapPath = join(copyDir, ROADMAP_DIR, "roadmap.json");
-  writeFileSync(`${roadmapPath}.tmp`, `${JSON.stringify(roadmap, null, 2)}\n`);
-  renameSync(`${roadmapPath}.tmp`, roadmapPath);
-  appendFileSync(join(copyDir, ROADMAP_DIR, "decisions.jsonl"), lines.map((line) => `${JSON.stringify(line)}\n`).join(""));
+// Each step is written and its forecasts rebuilt in a scratch folder first (the rebuild takes a
+// second or more), then moved into the served copy by renames, back to back: the forecasts
+// first, then the log, then the roadmap. So a page reading the copy never sees a decision log
+// newer than its forecast, and the files disagree with each other for milliseconds at most.
+const SCRATCH = ".next-step";
+
+function prepareStep(copyDir, { roadmap, lines }, at) {
+  const scratch = join(copyDir, SCRATCH);
+  rmSync(scratch, { recursive: true, force: true });
+  SAMPLE_PRODUCTS.forEach(({ roadmapDir }) => {
+    mkdirSync(join(scratch, roadmapDir), { recursive: true });
+    cpSync(join(copyDir, roadmapDir, "roadmap.json"), join(scratch, roadmapDir, "roadmap.json"));
+  });
+  writeFileSync(join(scratch, ROADMAP_DIR, "roadmap.json"), `${JSON.stringify(roadmap, null, 2)}\n`);
+  cpSync(join(copyDir, ROADMAP_DIR, "decisions.jsonl"), join(scratch, ROADMAP_DIR, "decisions.jsonl"));
+  appendFileSync(join(scratch, ROADMAP_DIR, "decisions.jsonl"), lines.map((line) => `${JSON.stringify(line)}\n`).join(""));
+  refreshPace(scratch, at);
+  return scratch;
+}
+
+function swapIn(copyDir, scratch, rename) {
+  const paceFiles = SAMPLE_PRODUCTS.map(({ roadmapDir }) => join(roadmapDir, "pace.json"));
+  [...paceFiles, join(ROADMAP_DIR, "decisions.jsonl"), join(ROADMAP_DIR, "roadmap.json")]
+    .forEach((path) => rename(join(scratch, path), join(copyDir, path)));
+  rmSync(scratch, { recursive: true, force: true });
 }
 
 // A step's words, then the cards it changes, each once, in the order the step lists them.
@@ -46,11 +66,11 @@ const isoSeconds = (date) => date.toISOString().replace(/\.\d{3}Z$/, "Z");
 // The copy's forecast is rebuilt from the synthetic sample history after every step and dated
 // at that step, so it is never older than the roadmap and the page keeps showing forecast hours
 // as the cards change.
-function refreshPace(copyDir, now) {
-  regenerate({ root: copyDir, end: defaultEnd(now), generatedAt: isoSeconds(now) });
+function refreshPace(root, now) {
+  regenerate({ root, end: defaultEnd(now), generatedAt: isoSeconds(now) });
 }
 
-export async function replay({ repoRoot, copyDir, steps, waitMs, pauseMs, sleep, now, log }) {
+export async function replay({ repoRoot, copyDir, steps, waitMs, pauseMs, sleep, now, log, rename = renameSync }) {
   if (!isReplaceable(copyDir)) {
     log("Replay not started: the copy directory already holds something that is not a replay copy");
     return { exitCode: 1 };
@@ -69,8 +89,7 @@ export async function replay({ repoRoot, copyDir, steps, waitMs, pauseMs, sleep,
       log(`${where} not written: ${error.message}`);
       return { exitCode: 1 };
     }
-    writeState(copyDir, applied);
-    refreshPace(copyDir, at);
+    swapIn(copyDir, prepareStep(copyDir, applied, at), rename);
     log(`${where}: ${stepWords(step)}`);
   }
   log("Replay finished; the copy stays in place until the next replay.");

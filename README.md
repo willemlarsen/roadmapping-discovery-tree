@@ -71,7 +71,9 @@ Planner through six made-up changes, each written only after it passes the roadm
 decision-log checks: a part moves from next to now, both parts of a card are solved so the card
 shows solved, the card is confirmed, a re-rank, and the re-ranked card's part starts. Each
 change appends who made it and why to the copy's decision log, which the page lists under
-"Recent decisions", and the copy's forecast is rebuilt from the sample history.
+"Recent decisions", and the copy's forecast is rebuilt from the sample history. Each step is
+built aside, forecast included, and moved into the copy in one go, so the page never catches a
+change ahead of its forecast.
 
 ```
 npm run replay                                     # terminal 1: copies, waits 15 s, then a step every 6 s

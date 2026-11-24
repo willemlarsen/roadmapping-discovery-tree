@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -191,5 +191,31 @@ test("each step's words name no card id; the replay adds the ids from the step's
 
   assert.deepEqual(GARDEN_STEPS.filter((step) => /\b[a-z]{2}-\d{3}\b/.test(step.say)).map((step) => step.say), []);
   assert.equal(said[0], "Step 1 of 1: Two cards are re-ranked (gp-007, gp-006)");
+  rmSync(dirname(copyDir), { recursive: true, force: true });
+});
+
+test("each step is rebuilt aside and swapped in by renames, forecasts first, so the served log is never newer than its forecast", async () => {
+  const copyDir = join(mkdtempSync(join(tmpdir(), "replay-")), "site");
+  const served = (path) => readFileSync(join(copyDir, path), "utf8");
+  const swaps = [];
+  let clock = Date.parse("2026-11-24T17:00:00Z");
+  const rename = (from, to) => {
+    renameSync(from, to);
+    const roadmap = JSON.parse(served("roadmap/roadmap.json"));
+    const pace = JSON.parse(served("roadmap/pace.json"));
+    const forecast = validatePace(pace, roadmap, lastChangedAt(readLog(copyDir))).state;
+    swaps.push({ file: to.slice(copyDir.length + 1), forecast });
+  };
+
+  const result = await replay({
+    repoRoot, copyDir, steps: GARDEN_STEPS.slice(0, 2), waitMs: 0, pauseMs: 0, rename,
+    sleep: async () => {}, now: () => new Date((clock += 60_000)), log: () => {},
+  });
+
+  assert.equal(result.exitCode, 0);
+  const oneStep = ["roadmap/pace.json", "products/seed-library/roadmap/pace.json", "roadmap/decisions.jsonl", "roadmap/roadmap.json"];
+  assert.deepEqual(swaps.map((swap) => swap.file), [...oneStep, ...oneStep]);
+  assert.deepEqual(swaps.filter((swap) => swap.forecast === "stale"), [], "no swap leaves a log newer than the forecast");
+  assert.equal(swaps.at(-1).forecast, "ok");
   rmSync(dirname(copyDir), { recursive: true, force: true });
 });
