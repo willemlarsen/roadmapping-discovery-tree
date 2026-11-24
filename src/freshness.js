@@ -1,9 +1,11 @@
-const MILLISECONDS_PER_HOUR = 60 * 60 * 1000;
+const MILLISECONDS_PER_MINUTE = 60 * 1000;
+const MILLISECONDS_PER_HOUR = 60 * MILLISECONDS_PER_MINUTE;
 
 // Largest first: the age is told in the largest unit it holds at least one of.
 const UNITS = [
   { name: "days", milliseconds: 24 * MILLISECONDS_PER_HOUR },
   { name: "hours", milliseconds: MILLISECONDS_PER_HOUR },
+  { name: "minutes", milliseconds: MILLISECONDS_PER_MINUTE },
 ];
 
 export function freshnessLine(entries, now) {
