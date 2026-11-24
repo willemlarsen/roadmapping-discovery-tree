@@ -10,3 +10,7 @@ test("freshnessLine counts whole days since the newest decision, wherever it sit
 
   assert.equal(freshnessLine(entries, NOW), "Roadmap last changed 3 days ago");
 });
+
+test("freshnessLine counts whole hours when the newest decision is less than a day old", () => {
+  assert.equal(freshnessLine([entryAt("2026-11-20T06:30:00Z")], NOW), "Roadmap last changed 5 hours ago");
+});
