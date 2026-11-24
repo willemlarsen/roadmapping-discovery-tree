@@ -38,3 +38,11 @@ test("a parent with a blocked part and none in progress shows blocked", () => {
 
   assert.equal(shown.get("f"), "blocked");
 });
+
+test("a parent whose parts are all done shows done", () => {
+  const problems = [card("f", "next"), card("a", "done", "f"), card("b", "done", "f")];
+
+  const shown = displayedStates(problems);
+
+  assert.equal(shown.get("f"), "done");
+});

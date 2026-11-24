@@ -1,9 +1,11 @@
 const IN_PROGRESS = new Set(["now", "merged"]);
+const isDone = (state) => state === "done";
 
 // First match wins; a parent no rule matches shows next.
 const PARENT_RULES = [
   { state: "now", holds: (states) => states.some((state) => IN_PROGRESS.has(state)) },
   { state: "blocked", holds: (states) => states.includes("blocked") },
+  { state: "done", holds: (states) => states.every(isDone) },
 ];
 
 export function displayedStates(problems) {
