@@ -1,7 +1,64 @@
 // Replays a short, made-up sequence of roadmap changes against a COPY of the sample, so a page
 // served from that copy redraws as each change lands. The committed sample files are never touched.
+import { appendFileSync, cpSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { validateDecisionLog } from "../src/decisions.js";
 import { validateRoadmap } from "../src/validate.js";
+import { defaultEnd, regenerate } from "./sample-history.mjs";
+
+// What the pages need to run, copied so the replay never writes to a tracked file.
+const SITE_PARTS = ["strip", "src", "portfolio", "roadmap", "products"];
+const ROADMAP_DIR = "roadmap";
+
+function copySite(repoRoot, copyDir) {
+  rmSync(copyDir, { recursive: true, force: true });
+  SITE_PARTS.forEach((part) => cpSync(join(repoRoot, part), join(copyDir, part), { recursive: true }));
+}
+
+function readState(copyDir) {
+  const roadmap = JSON.parse(readFileSync(join(copyDir, ROADMAP_DIR, "roadmap.json"), "utf8"));
+  const entries = readFileSync(join(copyDir, ROADMAP_DIR, "decisions.jsonl"), "utf8")
+    .split("\n").filter((line) => line.trim() !== "").map((line) => JSON.parse(line));
+  return { roadmap, entries };
+}
+
+function writeState(copyDir, { roadmap, lines }) {
+  const roadmapPath = join(copyDir, ROADMAP_DIR, "roadmap.json");
+  writeFileSync(`${roadmapPath}.tmp`, `${JSON.stringify(roadmap, null, 2)}\n`);
+  renameSync(`${roadmapPath}.tmp`, roadmapPath);
+  appendFileSync(join(copyDir, ROADMAP_DIR, "decisions.jsonl"), lines.map((line) => `${JSON.stringify(line)}\n`).join(""));
+}
+
+const isoSeconds = (date) => date.toISOString().replace(/\.\d{3}Z$/, "Z");
+
+// The copy's forecast is rebuilt from the synthetic sample history after every step, so the
+// page keeps showing forecast hours as the cards change.
+function refreshPace(copyDir, now) {
+  regenerate({ root: copyDir, end: defaultEnd(now) });
+}
+
+export async function replay({ repoRoot, copyDir, steps, waitMs, pauseMs, sleep, now, log }) {
+  copySite(repoRoot, copyDir);
+  refreshPace(copyDir, now());
+  for (const [index, step] of steps.entries()) {
+    await sleep(index === 0 ? waitMs : pauseMs);
+    const at = now();
+    const where = `Step ${index + 1} of ${steps.length}`;
+    let applied;
+    try {
+      applied = applyStep(step, readState(copyDir), isoSeconds(at));
+    } catch (error) {
+      if (!(error instanceof ReplayRefused)) throw error;
+      log(`${where} not written: ${error.message}`);
+      return { exitCode: 1 };
+    }
+    writeState(copyDir, applied);
+    refreshPace(copyDir, at);
+    log(`${where}: ${step.say}`);
+  }
+  log("Replay finished; the copy stays in place until the next replay.");
+  return { exitCode: 0 };
+}
 
 // A short sequence for the Community Garden Planner: a part starts, both parts of the weekly
 // tasks card are solved (so the card shows solved), its owner confirms it, a re-rank, and the

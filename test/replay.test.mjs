@@ -1,11 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { applyStep, GARDEN_STEPS } from "../scripts/replay.mjs";
+import { applyStep, GARDEN_STEPS, replay } from "../scripts/replay.mjs";
 import { validateDecisionLog } from "../src/decisions.js";
 import { displayedStates } from "../src/displayed-state.js";
+import { forecastOrder } from "../src/pace/order.js";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 
@@ -68,6 +70,60 @@ test("the garden steps all validate in turn on the committed sample, and the wee
   assert.ok(GARDEN_STEPS.length >= 4 && GARDEN_STEPS.length <= 8, `${GARDEN_STEPS.length} steps`);
   assert.deepEqual(shownAfter.slice(0, 3), ["now", "now", "done"]);
   assert.ok(GARDEN_STEPS.some((step) => step.changes.some((change) => change.order !== undefined)), "a step re-ranks");
+});
+
+const trackedSample = () => ["roadmap/roadmap.json", "roadmap/decisions.jsonl", "roadmap/pace.json"]
+  .map((path) => readFileSync(join(repoRoot, path), "utf8"));
+
+const readLog = (dir) => readFileSync(join(dir, "roadmap/decisions.jsonl"), "utf8").split("\n").filter(Boolean).map((line) => JSON.parse(line));
+
+test("replay copies the site, then writes each step into the copy after a pause, leaving the committed sample untouched", async () => {
+  const before = trackedSample();
+  const copyDir = join(mkdtempSync(join(tmpdir(), "replay-")), "site");
+  const pauses = [];
+  const said = [];
+  let clock = Date.parse("2026-11-24T17:00:00Z");
+
+  const result = await replay({
+    repoRoot, copyDir, steps: GARDEN_STEPS, waitMs: 9000, pauseMs: 4000,
+    sleep: async (ms) => { pauses.push(ms); }, now: () => new Date((clock += 60_000)), log: (line) => said.push(line),
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.deepEqual(trackedSample(), before);
+  assert.deepEqual(pauses, [9000, ...GARDEN_STEPS.slice(1).map(() => 4000)]);
+  ["strip/index.html", "src/tree-page.js", "portfolio/portfolio.json", "products/seed-library/roadmap/roadmap.json"]
+    .forEach((path) => assert.ok(existsSync(join(copyDir, path)), path));
+  const roadmap = JSON.parse(readFileSync(join(copyDir, "roadmap/roadmap.json"), "utf8"));
+  const log = readLog(copyDir);
+  assert.equal(validateDecisionLog(log, roadmap).valid, true);
+  assert.equal(log.length - readLog(repoRoot).length, GARDEN_STEPS.flatMap((step) => step.changes).length);
+  assert.equal(roadmap.problems.find((problem) => problem.id === "gp-072").status, "now");
+  const pace = JSON.parse(readFileSync(join(copyDir, "roadmap/pace.json"), "utf8"));
+  assert.equal(pace.status, "ok");
+  assert.deepEqual(pace.results.map((entry) => entry.id), forecastOrder(roadmap.problems).map((problem) => problem.id));
+  assert.equal(said.filter((line) => line.startsWith("Step ")).length, GARDEN_STEPS.length);
+  assert.equal(said.at(-1), "Replay finished; the copy stays in place until the next replay.");
+  rmSync(dirname(copyDir), { recursive: true, force: true });
+});
+
+test("a refused step stops the replay with exit 1 and its reason, and writes nothing for that step", async () => {
+  const copyDir = join(mkdtempSync(join(tmpdir(), "replay-")), "site");
+  const said = [];
+  const bad = { say: "Block without a reason", actor: "Tech Coach", why: "Stuck", changes: [{ card: "gp-021", status: "blocked" }] };
+
+  const result = await replay({
+    repoRoot, copyDir, steps: [GARDEN_STEPS[0], bad, GARDEN_STEPS[1]], waitMs: 0, pauseMs: 0,
+    sleep: async () => {}, now: () => new Date("2026-11-24T17:00:00Z"), log: (line) => said.push(line),
+  });
+
+  assert.equal(result.exitCode, 1);
+  assert.equal(readLog(copyDir).length, readLog(repoRoot).length + 1);
+  assert.deepEqual(said, [
+    "Step 1 of 3: Reminders (gp-022) moves from next to now",
+    "Step 2 of 3 not written: replay step refused: roadmap: gp-021 missing_field",
+  ]);
+  rmSync(dirname(copyDir), { recursive: true, force: true });
 });
 
 test("applyStep moves a card to a new status, dates it today, and writes one status line with who and why", () => {
