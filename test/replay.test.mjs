@@ -4,7 +4,8 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSy
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { applyStep, GARDEN_STEPS, replay, replayOptions } from "../scripts/replay.mjs";
+import { applyStep, replay, replayOptions } from "../scripts/replay.mjs";
+import { GARDEN_STEPS } from "../scripts/replay-steps.mjs";
 import { validateDecisionLog } from "../src/decisions.js";
 import { displayedStates } from "../src/displayed-state.js";
 import { forecastOrder } from "../src/pace/order.js";
