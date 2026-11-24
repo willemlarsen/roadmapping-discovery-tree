@@ -117,7 +117,7 @@ const DECISION_LOG_WORDS = "Every change to the roadmap is written to its decisi
 export function renderReadingGuide(document, { freshness, forecasted }) {
   const section = document.createElement("section");
   section.setAttribute("aria-label", "Reading guide");
-  section.appendChild(textElement(document, "p", freshness));
+  if (freshness !== null) section.appendChild(textElement(document, "p", freshness));
   const details = document.createElement("details");
   details.appendChild(textElement(document, "summary", "How to read this roadmap"));
   details.appendChild(stateList(document));

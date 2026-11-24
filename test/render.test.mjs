@@ -310,6 +310,12 @@ test("renderReadingGuide shows the freshness line, then a closed details whose s
   );
 });
 
+test("renderReadingGuide shows no freshness line when there is none, starting with the details", () => {
+  const guide = renderReadingGuide(createFakeDocument(), { freshness: null, forecasted: false });
+
+  assert.deepEqual(guide.children.map((part) => part.tagName), ["DETAILS"]);
+});
+
 test("renderReadingGuide explains each card state in the words its cards show, and that a card with parts shows the state they give it", () => {
   const guide = renderReadingGuide(createFakeDocument(), { freshness: "Roadmap last changed 3 days ago", forecasted: false });
 
