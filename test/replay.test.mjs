@@ -1,7 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { applyStep } from "../scripts/replay.mjs";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { applyStep, GARDEN_STEPS } from "../scripts/replay.mjs";
 import { validateDecisionLog } from "../src/decisions.js";
+import { displayedStates } from "../src/displayed-state.js";
+
+const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 
 const AT = "2026-11-24T17:00:00Z";
 
@@ -46,6 +52,22 @@ test("applyStep refuses a step whose roadmap or decision log would not validate,
   assert.throws(() => applyStep(blockedWithoutReason, state(), AT), { name: "ReplayRefused", message: /roadmap: gp-901 missing_field/ });
   assert.throws(() => applyStep(unknownCard, state(), AT), { name: "ReplayRefused", message: /unknown card gp-999/ });
   assert.throws(() => applyStep(goesBackInTime, state(), "2026-11-01T00:00:00Z"), { name: "ReplayRefused", message: /decision log: line 3 out_of_order/ });
+});
+
+test("the garden steps all validate in turn on the committed sample, and the weekly-tasks card shows solved once its last part is", () => {
+  const roadmap = JSON.parse(readFileSync(join(repoRoot, "roadmap/roadmap.json"), "utf8"));
+  const entries = readFileSync(join(repoRoot, "roadmap/decisions.jsonl"), "utf8").split("\n").filter(Boolean).map((line) => JSON.parse(line));
+
+  const shownAfter = [];
+  GARDEN_STEPS.reduce((current, step, index) => {
+    const { roadmap: next, lines } = applyStep(step, current, `2026-11-24T17:0${index}:00Z`);
+    shownAfter.push(displayedStates(next.problems).get("gp-002"));
+    return { roadmap: next, entries: [...current.entries, ...lines] };
+  }, { roadmap, entries });
+
+  assert.ok(GARDEN_STEPS.length >= 4 && GARDEN_STEPS.length <= 8, `${GARDEN_STEPS.length} steps`);
+  assert.deepEqual(shownAfter.slice(0, 3), ["now", "now", "done"]);
+  assert.ok(GARDEN_STEPS.some((step) => step.changes.some((change) => change.order !== undefined)), "a step re-ranks");
 });
 
 test("applyStep moves a card to a new status, dates it today, and writes one status line with who and why", () => {
