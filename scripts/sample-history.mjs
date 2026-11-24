@@ -47,12 +47,14 @@ function commitPlan(dir, plan) {
   plan.forEach(({ at, subject }) => git(["-c", "commit.gpgsign=false", "commit", "--allow-empty", "--quiet", "-m", subject], at));
 }
 
-export function regenerate({ root, end }) {
+// `generatedAt` defaults to the end day's last minute; the replay passes the time of its newest
+// change instead, so the forecast it writes is never older than the roadmap it describes.
+export function regenerate({ root, end, generatedAt = generatedAtFor(end) }) {
   return SAMPLE_PRODUCTS.map(({ roadmapDir, tokenPrefix, builds }) => {
     const gitDir = mkdtempSync(join(tmpdir(), "sample-history-"));
     try {
       commitPlan(gitDir, historyPlan(builds, { tokenPrefix, end }));
-      return { roadmapDir, ...writePace(root, () => new Date(generatedAtFor(end)), { roadmapDir, gitDir }) };
+      return { roadmapDir, ...writePace(root, () => new Date(generatedAt), { roadmapDir, gitDir }) };
     } finally {
       rmSync(gitDir, { recursive: true, force: true });
     }

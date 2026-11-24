@@ -39,10 +39,11 @@ function writeState(copyDir, { roadmap, lines }) {
 
 const isoSeconds = (date) => date.toISOString().replace(/\.\d{3}Z$/, "Z");
 
-// The copy's forecast is rebuilt from the synthetic sample history after every step, so the
-// page keeps showing forecast hours as the cards change.
+// The copy's forecast is rebuilt from the synthetic sample history after every step and dated
+// at that step, so it is never older than the roadmap and the page keeps showing forecast hours
+// as the cards change.
 function refreshPace(copyDir, now) {
-  regenerate({ root: copyDir, end: defaultEnd(now) });
+  regenerate({ root: copyDir, end: defaultEnd(now), generatedAt: isoSeconds(now) });
 }
 
 export async function replay({ repoRoot, copyDir, steps, waitMs, pauseMs, sleep, now, log }) {

@@ -8,6 +8,8 @@ import { applyStep, GARDEN_STEPS, replay, replayOptions } from "../scripts/repla
 import { validateDecisionLog } from "../src/decisions.js";
 import { displayedStates } from "../src/displayed-state.js";
 import { forecastOrder } from "../src/pace/order.js";
+import { validatePace } from "../src/pace/validate.js";
+import { lastChangedAt } from "../src/freshness.js";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 
@@ -102,6 +104,7 @@ test("replay copies the site, then writes each step into the copy after a pause,
   const pace = JSON.parse(readFileSync(join(copyDir, "roadmap/pace.json"), "utf8"));
   assert.equal(pace.status, "ok");
   assert.deepEqual(pace.results.map((entry) => entry.id), forecastOrder(roadmap.problems).map((problem) => problem.id));
+  assert.equal(validatePace(pace, roadmap, lastChangedAt(log)).state, "ok", "the copy's forecast is current after the last step");
   assert.equal(said.filter((line) => line.startsWith("Step ")).length, GARDEN_STEPS.length);
   assert.equal(said.at(-1), "Replay finished; the copy stays in place until the next replay.");
   rmSync(dirname(copyDir), { recursive: true, force: true });
