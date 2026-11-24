@@ -11,3 +11,11 @@ test("a card with no parts shows its own status", () => {
 
   assert.deepEqual([...shown], [["a", "blocked"], ["b", "merged"]]);
 });
+
+test("a parent whose parts have not started shows next, whatever its own status", () => {
+  const problems = [card("f", "now"), card("a", "next", "f"), card("b", "next", "f")];
+
+  const shown = displayedStates(problems);
+
+  assert.equal(shown.get("f"), "next");
+});
