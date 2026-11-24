@@ -6,6 +6,10 @@ A small sample of code built by AI agents under the ClickChain governance model.
 
 ![The discovery tree for the sample Community Garden Planner roadmap](docs/screenshot.jpg)
 
+![The sample roadmap changing as the replay script steps through six made-up decisions: cards move to solving now, parts are solved, a re-rank, and the Recent decisions list fills in](docs/replay.gif)
+
+*The animation is the real page, redrawing itself while `scripts/replay.mjs` changes a copy of the sample data (see [Watch it change](#watch-it-change)).*
+
 A roadmap viewer that shows a product's work as a discovery tree: the goal at the root, the user
 problems beneath it, and the parts of each problem beneath that. Each card shows its status
 (now, next, blocked, paused, parked, done) and its value and size estimate. A decision log
