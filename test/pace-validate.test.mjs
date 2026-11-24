@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { paceFile } from "../src/pace/file.js";
 import { forecastOrder } from "../src/pace/order.js";
 import { validatePace } from "../src/pace/validate.js";
+import { lastChangedAt } from "../src/freshness.js";
 import { workdayOn } from "./support/commits.mjs";
 import { FORECAST_ROADMAP, insufficientPace, roadmapWith, validPace } from "./support/pace.mjs";
 
@@ -78,6 +79,19 @@ test("validatePace calls a pace file stale only when the roadmap changed after i
     ["2026-10-31T20:33:30Z", "2026-10-31T12:33:30-08:00", generatedAt, "2026-10-01T00:00:00Z", null].map(stateWhenChangedAt),
     ["stale", "stale", "ok", "ok", "ok"],
   );
+});
+
+test("validatePace keeps a forecast current when the decision log is empty, since no roadmap change is known", () => {
+  const pace = validPace({ generatedAt: "2020-01-01T00:00:00Z" });
+
+  assert.equal(validatePace(pace, FORECAST_ROADMAP, lastChangedAt([])).state, "ok");
+});
+
+test("validatePace keeps a forecast dated in the future current: only a change after it makes it stale", () => {
+  const pace = validPace({ generatedAt: "2099-01-01T00:00:00Z" });
+
+  assert.equal(validatePace(pace, FORECAST_ROADMAP, "2026-11-24T12:00:00Z").state, "ok");
+  assert.equal(validatePace(pace, FORECAST_ROADMAP, "2099-01-01T00:00:01Z").state, "stale");
 });
 
 test("validatePace refuses results whose ranges go backwards in forecast order", () => {

@@ -79,7 +79,9 @@ the forecast was computed: when the newest decision-log entry is later than the 
 `generatedAt` (`src/pace/validate.js`, fed by `lastChangedAt` in `src/freshness.js`). The page
 then says "Forecast unavailable: the pace file is out of date." on each card and shows no
 ranges, and the load event's forecast code is `stale`. A forecast computed at or after the
-newest entry stays current however long ago that was.
+newest entry stays current however long ago that was. An empty decision log records no change, so
+the forecast stays current. A forecast dated in the future (a wrong clock where it was made)
+also stays current until a log entry is later than its date.
 
 The decision log is the signal because every change to the roadmap is written there, and the
 log must agree with `roadmap.json` (section 1), so it cannot change without a new line. The
