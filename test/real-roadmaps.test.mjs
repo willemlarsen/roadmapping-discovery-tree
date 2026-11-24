@@ -6,6 +6,7 @@ import { validateRoadmap } from "../src/validate.js";
 import { validateDecisionLog } from "../src/decisions.js";
 import { validatePortfolio } from "../src/portfolio.js";
 import { validatePace } from "../src/pace/validate.js";
+import { lastChangedAt } from "../src/freshness.js";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const REGISTRY = "portfolio/portfolio.json";
@@ -74,4 +75,18 @@ test("validatePace_withEveryRegistryPaceFile_isNotInvalid", () => {
     .map(({ path }) => path);
 
   assert.deepEqual(invalid, [], `pace files with an invalid shape: ${invalid.join(", ")}`);
+});
+
+test("validatePace_withEveryRegistryPaceFile_isCurrentAgainstItsDecisionLog", () => {
+  const roots = registryRoots().filter((root) => existsSync(`${repoRoot}${root}/pace.json`));
+
+  const notCurrent = roots
+    .map((root) => ({
+      path: `${root}/pace.json`, pace: readRepoJson(`${root}/pace.json`), roadmap: readRepoJson(`${root}/roadmap.json`),
+      changedAt: lastChangedAt(readRepoJsonLines(`${root}/decisions.jsonl`)),
+    }))
+    .filter(({ pace, roadmap, changedAt }) => validatePace(pace, roadmap, changedAt).state !== "ok")
+    .map(({ path }) => path);
+
+  assert.deepEqual(notCurrent, [], `pace files older than their roadmap's newest decision: ${notCurrent.join(", ")}`);
 });
