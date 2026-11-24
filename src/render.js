@@ -8,7 +8,7 @@ const STATUS_LINES = {
   blocked: (node) => (node.waitingOn ? `Waiting on ${node.waitingOn}` : "Waiting"),
   merged: () => "Merged, awaiting check",
   parked: () => "Parked",
-  paused: (node) => `Resumes after ${node.resumesAfterProblem}`,
+  paused: (node) => (node.resumesAfterProblem ? `Resumes after ${node.resumesAfterProblem}` : "Paused"),
 };
 
 export function renderTree(tree, document, view = {}) {
@@ -137,7 +137,7 @@ function renderLabel(node, document, view) {
   const label = textElement(document, "span", statusWords(node, view));
   const startedWords = view.started?.get(node.id);
   if (startedWords !== undefined) label.appendChild(hiddenText(document, `, ${startedWords}`));
-  if (node.status === "paused") label.appendChild(pauseMark(document));
+  if (shownState(node, view) === "paused") label.appendChild(pauseMark(document));
   return label;
 }
 
