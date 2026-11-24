@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { deriveRoadmapReference } from "./support/roadmap-reference.mjs";
+import { styledPage } from "./support/styled-page.mjs";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 const REFRESH =
@@ -11,7 +12,7 @@ const REFRESH =
 
 test("the roadmap reference derived from src/render.js and strip/index.html matches the pinned copy the share page was built from", () => {
   const renderJs = read("../src/render.js");
-  const indexHtml = read("../strip/index.html");
+  const indexHtml = styledPage("index.html");
   const { words, pausedMark, parkedHeading, borders } = JSON.parse(read("./fixtures/share-site/roadmap-reference.json"));
   const pinned = { words, pausedMark, parkedHeading, borders };
 

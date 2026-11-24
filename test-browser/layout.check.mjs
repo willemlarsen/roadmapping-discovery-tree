@@ -11,7 +11,7 @@ const ROOT = new URL("..", import.meta.url).pathname;
 const CHROME = process.env.CHROME_BIN ?? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const SANDBOX_FLAGS = process.env.CI ? ["--no-sandbox"] : [];
 const ZOOMED_WIDTH = 900;
-const CONTENT_TYPES = { ".html": "text/html", ".js": "text/javascript", ".json": "application/json", ".jsonl": "text/plain" };
+const CONTENT_TYPES = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".json": "application/json", ".jsonl": "text/plain" };
 
 function serveRepo(overrides = new Map(), delays = new Map()) {
   const server = createServer(async (request, response) => {

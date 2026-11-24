@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { contrastRatio, colourLiteralsOutsideRoot, failingPairs, resolvePairs } from "./support/contrast.mjs";
+import { styledPage } from "./support/styled-page.mjs";
 
 test("contrastRatio of white on black is 21", () => {
   const ratio = contrastRatio("#ffffff", "#000000");
@@ -41,8 +42,8 @@ test("resolvePairs throws naming a token whose value is not six-digit hex", () =
   assert.throws(resolve, /--ink.*six-digit hex/);
 });
 
-function readPage() {
-  return readFile(new URL("../strip/index.html", import.meta.url), "utf8");
+async function readPage() {
+  return styledPage("index.html");
 }
 
 test("the page background is dark by default", async () => {
