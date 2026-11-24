@@ -46,3 +46,14 @@ test("a parent whose parts are all done shows done", () => {
 
   assert.equal(shown.get("f"), "done");
 });
+
+test("a parent whose unsolved parts are all parked shows parked", () => {
+  const problems = [
+    card("f", "next"), card("a", "done", "f"), card("b", "parked", "f"),
+    card("g", "now"), card("c", "parked", "g"), card("d", "parked", "g"),
+  ];
+
+  const shown = displayedStates(problems);
+
+  assert.deepEqual([shown.get("f"), shown.get("g")], ["parked", "parked"]);
+});

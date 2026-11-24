@@ -6,6 +6,7 @@ const PARENT_RULES = [
   { state: "now", holds: (states) => states.some((state) => IN_PROGRESS.has(state)) },
   { state: "blocked", holds: (states) => states.includes("blocked") },
   { state: "done", holds: (states) => states.every(isDone) },
+  { state: "parked", holds: (states) => states.filter((state) => !isDone(state)).every((state) => state === "parked") },
 ];
 
 export function displayedStates(problems) {
