@@ -776,6 +776,29 @@ test("a changed served roadmap replaces the view while the Pause motion button k
   assert.ok(Math.abs(seen.after.scrollY - seen.before.scrollY) <= 1, `scroll moved from ${seen.before.scrollY} to ${seen.after.scrollY}`);
 });
 
+const CARD_TREE_PLACE = `(() => {
+  const tree = ${CARD_TREE};
+  return { focused: document.activeElement === tree, scrollLeft: tree.scrollLeft };
+})()`;
+
+test("a changed served roadmap replaces a wide tree's view while its Card tree region keeps focus and its sideways scroll", async () => {
+  const overrides = new Map();
+  const server = await serveRepo(overrides);
+  const url = `http://127.0.0.1:${server.address().port}/strip/index.html`;
+
+  const seen = await withPage(url, async (send) => {
+    await evaluate(pollUntilFound(ROADMAP_CARDS, "() => true"))(send);
+    const before = await evaluate(`(() => { const tree = ${CARD_TREE}; tree.focus(); tree.scrollLeft = 120; return ${CARD_TREE_PLACE}; })()`)(send);
+    const roadmap = JSON.parse(await readFile(join(ROOT, "roadmap/roadmap.json"), "utf8"));
+    roadmap.problems[0].problem = RENAMED_TITLE;
+    overrides.set("/roadmap/roadmap.json", JSON.stringify(roadmap));
+    const waited = await evaluate(WAIT_FOR_NEW_TITLE)(send);
+    return { before, waited, after: await evaluate(CARD_TREE_PLACE)(send) };
+  }, { width: ZOOMED_WIDTH }).finally(() => server.close());
+
+  assert.deepEqual(seen, { before: { focused: true, scrollLeft: 120 }, waited: { found: true, views: 1 }, after: { focused: true, scrollLeft: 120 } });
+});
+
 const MOTION_STATE_IN_PAGE = `(() => {
   const button = [...document.querySelectorAll("button")].find((candidate) => candidate.textContent === "Pause motion");
   const pulsing = document.querySelector("section[aria-label='Roadmap'] li > div[data-pulse]");

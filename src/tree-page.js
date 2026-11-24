@@ -37,6 +37,21 @@ export function initPageChrome(document) {
   return status;
 }
 
+const CARD_TREE = '[role="region"][aria-label="Card tree"]';
+
+// A live change redraws the whole view; the reader keeps their sideways place and focus in the tree.
+function cardTreePlace(document, view) {
+  const tree = view.querySelector(CARD_TREE);
+  return tree && { scrollLeft: tree.scrollLeft, focused: document.activeElement === tree };
+}
+
+function restoreCardTreePlace(view, place) {
+  const tree = view.querySelector(CARD_TREE);
+  if (!tree || !place) return;
+  tree.scrollLeft = place.scrollLeft;
+  if (place.focused) tree.focus();
+}
+
 export async function mountTree(container, io, roadmapRoot) {
   const { document, fetch, schedule, now, emit, isHidden, status } = io;
   const snapshotIo = { document, emit, now, showReadAt: (_line, at, entries) => status.showRead(at, entries) };
@@ -53,8 +68,10 @@ export async function mountTree(container, io, roadmapRoot) {
     emit,
     onChange: (snapshot) => {
       const next = showSnapshot(snapshot, snapshotIo);
+      const place = cardTreePlace(document, view);
       view.replaceWith(next);
       view = next;
+      restoreCardTreePlace(view, place);
     },
     onFailure: () => status.showFailure(),
     onRecover: (snapshot) => showSnapshot(snapshot, snapshotIo),
