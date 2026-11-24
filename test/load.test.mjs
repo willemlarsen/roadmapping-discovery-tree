@@ -3,9 +3,13 @@ import assert from "node:assert/strict";
 import { createReadAtStatus, fileSource, renderReadAt, showRoadmap } from "../src/load.js";
 import { createFakeDocument, allElements } from "./support/fake-dom.mjs";
 import { estimateFor, UNRANKED } from "./support/words.mjs";
-import { insufficientPace, validPace } from "./support/pace.mjs";
+import { insufficientPace as insufficientPaceOf, validPace as validPaceOf } from "./support/pace.mjs";
 
 const AT = "2026-11-01T12:00:00Z";
+// The pace files these tests serve were computed when the seed decisions were logged, so they
+// are current unless a test says otherwise.
+const validPace = (overrides = {}) => validPaceOf({ generatedAt: AT, ...overrides });
+const insufficientPace = (reason) => ({ ...insufficientPaceOf(reason), generatedAt: AT });
 
 const failures = [
   { name: "fetch rejects", fetch: async () => { throw new Error("ECONNREFUSED 10.0.0.7:8080 secret-path"); }, reason: "fetch-failed", words: "The roadmap could not be loaded." },
@@ -274,19 +278,17 @@ test("an insufficient pace file shows no range, says not enough history and emit
     reasons.map(() => [[[note], [note]], ["insufficient"]]));
 });
 
-test("a pace file older than three days is stale and shows no range, while one exactly three days old is fresh", async () => {
-  const generatedAt = validPace().generatedAt;
-  const clocks = ["2026-11-03T20:33:30Z", "2026-11-03T20:33:29Z"];
-  const paceFetch = servingPace(async () => ({ ok: true, text: async () => JSON.stringify(validPace()) }));
+test("a pace file computed before the newest decision is stale and shows no range, while one computed at it stays current a month later", async () => {
+  const cases = [["2026-11-01T11:59:59Z", AT], [AT, "2026-12-01T12:00:00Z"]];
 
-  const loads = await Promise.all(clocks.map(async (clock) => {
+  const loads = await Promise.all(cases.map(async ([generatedAt, clock]) => {
     const events = [];
+    const paceFetch = servingPace(async () => ({ ok: true, text: async () => JSON.stringify(validPace({ generatedAt })) }));
     const shown = await showWithReadAt({ fetch: paceFetch, document: createFakeDocument(), emit: (event) => events.push(event), now: () => clock });
     return [forecastNotes(shown), events.map((event) => event.forecast)];
   }));
 
   const note = "Forecast unavailable: the pace file is out of date.";
-  assert.equal(generatedAt, "2026-10-31T20:33:29Z");
   assert.deepEqual(loads, [[[[note], [note]], ["stale"]], [[["Sequence 1 of 2 \u00b7 the order the work follows", "About 2 working hours left (85% likely)"], ["Sequence 2 of 2 \u00b7 the order the work follows", "About 3 working hours left (85% likely)"]], ["ok"]]]);
 });
 
@@ -316,7 +318,7 @@ test("the page shows the forecast's inputs whenever the pace file is valid and n
   };
 
   const ok = await loadAt(servedAs(validPace()), AT);
-  const stale = await loadAt(servedAs(validPace()), "2026-11-04T00:00:00Z");
+  const stale = await loadAt(servedAs(validPace({ generatedAt: "2026-10-31T20:33:29Z" })), AT);
   const insufficient = await loadAt(servedAs(insufficientPace()), AT);
   const missing = await loadAt(servingPace(async () => { throw new Error("offline"); }), AT);
   const invalid = await loadAt(servedAs({ results: [] }), AT);
@@ -324,11 +326,11 @@ test("the page shows the forecast's inputs whenever the pace file is valid and n
   const counts = "History read: 125 commits, 72 cycle commits, 71 cycle intervals, 4 active days";
   const window = "Window: the last 4 active days within the last 14 days, sessions split at gaps over 60 minutes, each day capped at 10 hours";
   const sizes = "Cycles per card: sizes from 3 finished builds, 6 to 14 cycles.";
-  const generated = "Pace file generated 2026-10-31T20:33:29Z";
+  const generated = `Pace file generated ${AT}`;
   const hours = "Hours are working hours at the measured pace, counted from now, one card after another.";
   assert.deepEqual([ok, stale, insufficient, missing, invalid].map(inputLines), [
     ["Forecast inputs", "Pace: 1.45 hours of work per active day", window, sizes, counts, generated, hours],
-    ["Forecast inputs", "Pace: 1.45 hours of work per active day", window, sizes, counts, generated, hours],
+    ["Forecast inputs", "Pace: 1.45 hours of work per active day", window, sizes, counts, "Pace file generated 2026-10-31T20:33:29Z", hours],
     ["Forecast inputs", window, sizes, counts, generated],
     [],
     [],

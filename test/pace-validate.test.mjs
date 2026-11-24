@@ -6,7 +6,7 @@ import { validatePace } from "../src/pace/validate.js";
 import { workdayOn } from "./support/commits.mjs";
 import { FORECAST_ROADMAP, insufficientPace, roadmapWith, validPace } from "./support/pace.mjs";
 
-const NOW = "2026-11-01T00:00:00Z";
+const NOW = "2026-10-30T00:00:00Z"; // the roadmap's newest change, before the pace file was computed
 const withResult = (changes) => validPace().results.map((result, index) => (index === 0 ? { ...result, ...changes } : result));
 
 test("validatePace accepts a pace file that fits the contract and the roadmap and marks anything else invalid", () => {
@@ -55,7 +55,6 @@ test("validatePace accepts a pace file that fits the contract and the roadmap an
 
   assert.deepEqual(validatePace(good, FORECAST_ROADMAP, NOW), { state: "ok", pace: good });
   assert.deepEqual(verdicts, hostile.map(() => "invalid"));
-  assert.equal(validatePace(good, FORECAST_ROADMAP, "no clock").state, "stale");
 });
 
 test("validatePace refuses an ok file whose inputs show too little history", () => {
@@ -70,15 +69,15 @@ test("validatePace refuses an ok file whose inputs show too little history", () 
   assert.equal(validatePace(insufficientPace(), FORECAST_ROADMAP, NOW).state, "insufficient");
 });
 
-test("validatePace treats a pace file generated after the page clock as stale", () => {
+test("validatePace calls a pace file stale only when the roadmap changed after it was computed, however old it is", () => {
   const generatedAt = "2026-10-31T20:33:29Z";
   const pace = validPace({ generatedAt });
+  const stateWhenChangedAt = (changedAt) => validatePace(pace, FORECAST_ROADMAP, changedAt).state;
 
-  const oneSecondBefore = validatePace(pace, FORECAST_ROADMAP, "2026-10-31T20:33:28Z");
-  const sameSecond = validatePace(pace, FORECAST_ROADMAP, generatedAt);
-
-  assert.equal(oneSecondBefore.state, "stale");
-  assert.equal(sameSecond.state, "ok");
+  assert.deepEqual(
+    ["2026-10-31T20:33:30Z", "2026-10-31T12:33:30-08:00", generatedAt, "2026-10-01T00:00:00Z", null].map(stateWhenChangedAt),
+    ["stale", "stale", "ok", "ok", "ok"],
+  );
 });
 
 test("validatePace refuses results whose ranges go backwards in forecast order", () => {

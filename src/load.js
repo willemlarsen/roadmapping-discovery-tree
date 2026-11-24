@@ -1,6 +1,6 @@
 import { buildTree } from "./tree.js";
 import { renderForecastInputs, renderParked, renderReadingGuide, renderRecentDecisions, renderStaleness, renderTree, renderWip } from "./render.js";
-import { freshnessLine } from "./freshness.js";
+import { freshnessLine, lastChangedAt } from "./freshness.js";
 import { recentDecisions } from "./recent-decisions.js";
 import { wipStatus } from "./wip.js";
 import { pulsingIds } from "./pulse.js";
@@ -42,7 +42,9 @@ export async function showRoadmap(io) {
 
 export function showSnapshot({ roadmapText, logText, paceText }, io) {
   const loaded = readRoadmap(roadmapText, logText);
-  return loaded.failure ? showFailure(loaded.failure, io) : showTree(loaded, viewOf(forecastOf(paceText, loaded.roadmap, io.now()), loaded.roadmap), io);
+  if (loaded.failure) return showFailure(loaded.failure, io);
+  const forecast = forecastOf(paceText, loaded.roadmap, lastChangedAt(loaded.entries));
+  return showTree(loaded, viewOf(forecast, loaded.roadmap), io);
 }
 
 function viewOf(forecast, roadmap) {

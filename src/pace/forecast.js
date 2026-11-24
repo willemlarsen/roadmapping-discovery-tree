@@ -1,9 +1,9 @@
 import { validatePace } from "./validate.js";
 
-export function forecastOf(paceText, roadmap, now) {
+export function forecastOf(paceText, roadmap, changedAt) {
   if (paceText === null) return { state: "missing" };
   const pace = parseJson(paceText);
-  return validatePace(pace, roadmap, now);
+  return validatePace(pace, roadmap, changedAt);
 }
 
 function parseJson(text) {

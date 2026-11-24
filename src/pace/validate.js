@@ -4,7 +4,6 @@ import { forecastOrder } from "./order.js";
 import { MAX_SESSION_CYCLES, MIN_SESSION_CYCLES } from "./sizes.js";
 
 const MAX_SIZE_SAMPLES = 500;
-const MAX_AGE_MS = 3 * 86_400_000;
 const MAX_HOURS_PER_DAY = 24;
 const MAX_RESULTS = 200;
 const ID = /^[a-z0-9-]{1,64}$/;
@@ -18,9 +17,12 @@ const SIZE_SAMPLES = "sizeSamples";
 const RANGE_ENDS = ["p50Hours", "p85Hours", "p50Date", "p85Date"];
 const RESULT_FIELDS = ["id", "remainingCycles", "p50Hours", "p85Hours", "p95Hours", "p50Date", "p85Date"];
 
-export function validatePace(pace, roadmap, now) {
+// A forecast goes stale only when the roadmap changed after it was computed: `changedAt` is the
+// time of the roadmap's newest change (null when none is known). Its age by the clock, and new
+// commits alone, never make it stale.
+export function validatePace(pace, roadmap, changedAt) {
   const shaped = shapeOf(pace, roadmap);
-  return shaped.state !== "invalid" && isStale(pace.generatedAt, now) ? { state: "stale", pace } : shaped;
+  return shaped.state !== "invalid" && isStale(pace.generatedAt, changedAt) ? { state: "stale", pace } : shaped;
 }
 
 function shapeOf(pace, roadmap) {
@@ -29,9 +31,8 @@ function shapeOf(pace, roadmap) {
   return { state: "invalid" };
 }
 
-function isStale(generatedAt, now) {
-  const age = Date.parse(now) - Date.parse(generatedAt);
-  return !(age >= 0 && age <= MAX_AGE_MS);
+function isStale(generatedAt, changedAt) {
+  return changedAt !== null && Date.parse(changedAt) > Date.parse(generatedAt);
 }
 
 function isContract(pace) {

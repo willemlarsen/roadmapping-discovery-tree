@@ -187,7 +187,7 @@ test("paceFile_withFinishedBuilds_recordsTheirSizesAndTheFileValidates", () => {
   const historyOf = (cyclesPerDay) => [...cyclesPerDay.flatMap((cycles, index) => workdayOn(days[index], { cycles })), buildStartedLaterOn(days[cyclesPerDay.length - 1])];
   const cards = FORECAST_ROADMAP.problems.map((problem) => ({ id: problem.id, remainingCycles: 16 }));
   const generatedAt = "2026-10-31T12:00:00Z";
-  const stateOf = (file) => validatePace(file, FORECAST_ROADMAP, "2026-11-01T00:00:00Z").state;
+  const stateOf = (file) => validatePace(file, FORECAST_ROADMAP, "2026-10-30T09:00:00Z").state;
 
   const sampled = paceFile({ commits: historyOf([11, 5, 9, 7]), cards, generatedAt });
   const fallback = paceFile({ commits: historyOf([6, 4, 4, 4]), cards, generatedAt });
