@@ -2086,7 +2086,7 @@ const MENU_STATE = pollUntilFound(`[...document.querySelectorAll("main section[a
     controlsTheList: Boolean(button) && button.getAttribute("aria-controls") === nav.id,
     expanded: button?.getAttribute("aria-expanded") ?? null,
     listShown: shown(nav),
-    treeFillsScreen: tree.left === 0 && tree.width === window.innerWidth,
+    treeFillsScreen: tree.left === 0 && tree.width === document.documentElement.clientWidth,
   };
 }`);
 
