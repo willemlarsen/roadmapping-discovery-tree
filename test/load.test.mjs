@@ -669,10 +669,10 @@ test("card contract table: scheduled card, rolled-up feature, missing pace data 
   const featureCards = allElements(treeOf((await loadAt(featureFetch, AT)))).filter((element) => element.tagName === "LI")
     .map((item) => item.children[0]).filter((card) => card.children.length > 1);
   const labelled = (card) => [card.attributes["data-status"], card.children[0].textContent];
-  assert.deepEqual([featureCards[0], featureCards[3]].map(labelled), [["next", "Started, 1 of 2 parts solved"], ["next", "Next"]]);
+  assert.deepEqual([featureCards[0], featureCards[3]].map(labelled), [["paused", "Paused, 1 of 2 parts solved⏸"], ["next", "Next"]]);
 });
 
-test("a next feature with one done and one next part shows Started as its label with 1 of 2 parts solved hidden", async () => {
+test("a next feature with one done and one next part shows Paused as its label with 1 of 2 parts solved hidden", async () => {
   const entry = (id, parent, order, status, solved = {}) => ({ ...roadmap.problems[0], id, parent, order, status, ...solved });
   const problems = [
     entry("up-001", null, 1, "next"),
@@ -686,7 +686,7 @@ test("a next feature with one done and one next part shows Started as its label 
 
   const feature = allElements(treeOf(shown)).find((element) => element.tagName === "LI");
   const label = feature.children[0].children[0];
-  assert.deepEqual([label.textContent, label.children[0].textContent], ["Started, 1 of 2 parts solved", ", 1 of 2 parts solved"]);
+  assert.deepEqual([label.textContent, label.children[0].textContent], ["Paused, 1 of 2 parts solved⏸", ", 1 of 2 parts solved"]);
 });
 
 test("after a load the started feature's card carries data-started and a plain next feature's card does not", async () => {
@@ -705,6 +705,22 @@ test("after a load the started feature's card carries data-started and a plain n
   const features = allElements(treeOf(shown)).filter((element) => element.tagName === "LI" && element.children[0].children.length > 1);
   const started = (item) => item.children[0].attributes["data-started"];
   assert.deepEqual([features[0], features[1]].map(started), ["", undefined]);
+});
+
+test("after a load a parent card shows the state its parts give it, not its own status", async () => {
+  const entry = (id, parent, order, status, fields = {}) => ({ ...roadmap.problems[0], id, parent, order, status, ...fields });
+  const problems = [
+    entry("up-001", null, 1, "now"),
+    entry("up-002", "up-001", 1, "blocked", { waitingOn: "a Pages account" }),
+    entry("up-003", "up-001", 2, "next"),
+  ];
+  const logText = problems.map(({ id, status }) => JSON.stringify(logLine(id, "coach-add", status))).join("\n");
+  const fetch = async (path) => (path.endsWith("roadmap.json") ? { ok: true, text: async () => JSON.stringify({ ...roadmap, wipLimit: 4, problems }) } : { ok: true, text: async () => logText });
+
+  const { shown } = await load(fetch);
+
+  const parent = allElements(treeOf(shown)).find((element) => element.tagName === "LI").children[0];
+  assert.deepEqual([parent.attributes["data-status"], parent.children[0].textContent], ["blocked", "Waiting"]);
 });
 
 const nestedPulseServing = (log) => {

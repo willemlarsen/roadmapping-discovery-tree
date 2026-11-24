@@ -10,6 +10,7 @@ import { activeProblems } from "./pace/order.js";
 import { rankProblems } from "./rank.js";
 import { partLine, rankLine } from "./rank-words.js";
 import { startedParts } from "./started-words.js";
+import { displayedStates } from "./displayed-state.js";
 
 const DEFAULT_ROOT = "roadmap";
 
@@ -46,7 +47,7 @@ function viewOf(forecast, roadmap) {
   const sequence = activeProblems(roadmap.problems);
   const ranking = rankProblems(sequence);
   const cardLines = new Map(sequence.map((problem) => [problem.id, cardLineOf(problem, ranking, roadmap.problems)]));
-  return Object.freeze({ forecast, ranking, cardLines, started: startedOf(roadmap.problems) });
+  return Object.freeze({ forecast, ranking, cardLines, started: startedOf(roadmap.problems), shown: displayedStates(roadmap.problems) });
 }
 
 function startedOf(problems) {

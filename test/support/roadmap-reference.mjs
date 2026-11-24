@@ -3,7 +3,8 @@ const STATUSES = ["done", "now", "next", "blocked", "paused", "merged"];
 const unescaped = (quoted) => JSON.parse(`"${quoted}"`);
 
 function wordOf(renderJs, status) {
-  const line = renderJs.match(new RegExp(`^\\s*${status}:\\s*\\([^)]*\\)\\s*=>\\s*[\`"]([^"\`$]*)`, "m"));
+  // A line may open with a condition, `(node.detail ? \`Words ${...}\` : "Words")`; the first string carries the words.
+  const line = renderJs.match(new RegExp(`^\\s*${status}:\\s*\\([^)]*\\)\\s*=>\\s*(?:\\([^?]*\\?\\s*)?[\`"]([^"\`$]*)`, "m"));
   return line[1].trim();
 }
 

@@ -227,15 +227,15 @@ test("renderTree stamps data-started on a card in view.started and on no other c
   assert.deepEqual(items.map((item) => item.children[0].attributes["data-started"]), ["", undefined]);
 });
 
-test("renderTree labels a started card Started with the part count in a visually hidden span", () => {
+test("renderTree labels a started card with its shown state and the part count in a visually hidden span", () => {
   const next = (id, order) => ({ id, problem: `Problem ${id}`, status: "next", order, children: [] });
-  const view = { started: new Map([["up-001", "1 of 2 parts solved"]]) };
+  const view = { started: new Map([["up-001", "1 of 2 parts solved"]]), shown: new Map([["up-001", "paused"]]) };
 
   const items = renderTree({ goal: "Goal", children: [next("up-001", 1), next("up-002", 2)] }, createFakeDocument(), view).children[1].children;
 
   const labels = items.map((item) => item.children[0].children[0]);
-  assert.deepEqual(labels.map((label) => label.textContent), ["Started, 1 of 2 parts solved", "Next"]);
-  assert.deepEqual(labels.map((label) => label.children.map((hidden) => [hidden.attributes["data-visually-hidden"], hidden.textContent])), [[["", ", 1 of 2 parts solved"]], []]);
+  assert.deepEqual(labels.map((label) => label.textContent), ["Paused, 1 of 2 parts solved⏸", "Next"]);
+  assert.deepEqual(labels.map((label) => label.children.map((part) => [part.attributes["data-visually-hidden"], part.textContent])), [[["", ", 1 of 2 parts solved"], [undefined, "⏸"]], []]);
 });
 
 test("renderTree gives a blocked card the words waiting on and what it waits on", () => {

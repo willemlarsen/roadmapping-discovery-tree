@@ -134,15 +134,11 @@ function stampCard(card, node, view) {
 }
 
 function renderLabel(node, document, view) {
-  const label = textElement(document, "span", statusWords(node, view));
+  const label = textElement(document, "span", STATUS_LINES[shownState(node, view)](node));
   const startedWords = view.started?.get(node.id);
   if (startedWords !== undefined) label.appendChild(hiddenText(document, `, ${startedWords}`));
   if (shownState(node, view) === "paused") label.appendChild(pauseMark(document));
   return label;
-}
-
-function statusWords(node, view) {
-  return view.started?.has(node.id) ? "Started" : STATUS_LINES[shownState(node, view)](node);
 }
 
 function hiddenText(document, text) {
