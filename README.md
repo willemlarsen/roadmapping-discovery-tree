@@ -36,8 +36,9 @@ from this repository's own commits, which are too few. `scripts/sample-history.m
 history in a temporary directory: a fixed made-up author, backdated cycle commits that name the
 sample products' own cards, made-up session tokens, a few cycles a day over the last two to three
 weeks of workdays. It then runs `scripts/pace.mjs --git <that directory>` for each product and
-deletes the history. To regenerate (the page treats a pace file over three days old as out of
-date):
+deletes the history. The page treats a forecast as out of date only once the roadmap changes
+after it was computed (a newer decision-log entry), never by its age alone, so regenerate after
+changing a sample card:
 
 ```
 npm run sample-history                       # the history ends yesterday

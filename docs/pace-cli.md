@@ -20,6 +20,19 @@ runs this script with `--git` pointing at each history, dates the file the end d
 minute (`generatedAt` is `<end>T23:59:00Z`), and deletes the history. The same end day always
 gives the same files, and `test/sample-history.test.mjs` checks the committed ones against it.
 
+## When the page treats a forecast as out of date
+
+The page shows a pace file's forecast until the roadmap changes after it: once the newest
+decision-log entry is later than `generatedAt`, the cards say "Forecast unavailable: the pace
+file is out of date." until `npm run pace` (or, for the samples, `npm run sample-history`) is
+run again. How old the file is by the clock does not matter, and neither do new commits on
+their own: a forecast is not invalidated by new commits alone, only by roadmap changes. This is
+a deliberate rule; `docs/design.md` (section 5) gives the reasons. The sample files'
+`generatedAt` falls after their logs' newest entries, so they stay current until a sample card
+changes, and `test/real-roadmaps.test.mjs` fails if one does not. The replay
+(`scripts/replay.mjs`) dates each forecast it rebuilds at the step it follows, so its copy stays
+current too.
+
 ## Flags
 
 | Flag | Meaning | Default |

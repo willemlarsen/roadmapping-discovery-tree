@@ -74,6 +74,25 @@ A roadmap is stale when the more recent of its last re-rank and the newest `stat
 `now` or `blocked` problem is more than `staleAfterDays` whole days ago. The page then shows a
 warning at the top.
 
+A forecast is a different matter. `pace.json` is out of date only when the roadmap changed after
+the forecast was computed: when the newest decision-log entry is later than the file's
+`generatedAt` (`src/pace/validate.js`, fed by `lastChangedAt` in `src/freshness.js`). The page
+then says "Forecast unavailable: the pace file is out of date." on each card and shows no
+ranges, and the load event's forecast code is `stale`. A forecast computed at or after the
+newest entry stays current however long ago that was.
+
+The decision log is the signal because every change to the roadmap is written there, and the
+log must agree with `roadmap.json` (section 1), so it cannot change without a new line. The
+dates inside `roadmap.json` (`statusSince`, `doneOn`) are whole days, too coarse to compare with
+a forecast's time, and each one is already matched by a log line. Entries are compared as
+instants, whatever offset they are written in.
+
+The forecast also reads git history, but new commits alone do not put it out of date: only a
+roadmap change does. That is deliberate. A forecast that ignores the last few commits is still
+a fair estimate of the cards it names, while one made before a card was started, solved or
+re-ranked describes a roadmap that no longer exists. A forecast for a different set of cards
+is caught separately, as `outdated` ("the forecast needs refreshing").
+
 ## 6. Observability
 
 Every load emits one structured event, `{ "event": "roadmap.load", "at", "outcome", "reason",
