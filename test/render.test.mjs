@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { renderMotionToggle, renderParked, renderTree } from "../src/render.js";
+import { renderMotionToggle, renderParked, renderReadingGuide, renderTree } from "../src/render.js";
 import { buildTree } from "../src/tree.js";
 import { createFakeDocument, allElements } from "./support/fake-dom.mjs";
 import { estimateFor, UNRANKED } from "./support/words.mjs";
@@ -298,6 +298,16 @@ test("renderParked starts the region with a visible heading that names it", () =
 
   const [heading, list] = region.children;
   assert.deepEqual([heading.tagName, heading.textContent, list.tagName], ["H2", "Parked for later", "UL"]);
+});
+
+test("renderReadingGuide shows the freshness line, then a closed details whose summary reads How to read this roadmap", () => {
+  const guide = renderReadingGuide(createFakeDocument(), { freshness: "Roadmap last changed 3 days ago", forecasted: false });
+
+  const [freshness, details] = guide.children;
+  assert.deepEqual(
+    [guide.tagName, guide.attributes["aria-label"], freshness.tagName, freshness.textContent, details.tagName, details.attributes.open, details.children[0].tagName, details.children[0].textContent],
+    ["SECTION", "Reading guide", "P", "Roadmap last changed 3 days ago", "DETAILS", undefined, "SUMMARY", "How to read this roadmap"],
+  );
 });
 
 test("renderMotionToggle returns a button named Pause motion that is not pressed", () => {

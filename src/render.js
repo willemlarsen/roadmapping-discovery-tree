@@ -96,6 +96,16 @@ export function renderStaleness({ days, stale }, document) {
   return warning;
 }
 
+export function renderReadingGuide(document, { freshness }) {
+  const section = document.createElement("section");
+  section.setAttribute("aria-label", "Reading guide");
+  section.appendChild(textElement(document, "p", freshness));
+  const details = document.createElement("details");
+  details.appendChild(textElement(document, "summary", "How to read this roadmap"));
+  section.appendChild(details);
+  return section;
+}
+
 export function renderParked(tree, document) {
   if (tree.parked.length === 0) return null;
   const section = document.createElement("section");
