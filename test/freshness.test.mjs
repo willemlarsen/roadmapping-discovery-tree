@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { freshnessLine } from "../src/freshness.js";
+import { freshnessLine, lastChangedAt } from "../src/freshness.js";
 
 const NOW = "2026-11-20T12:00:00Z";
 const entryAt = (at) => ({ at, problemId: "fx-1", actor: "Amal", action: "coach-status", before: "next", after: "now", why: "Started" });
@@ -37,4 +37,10 @@ test("freshnessLine says just now under a minute, and for a decision stamped ahe
   const ages = ["2026-11-20T11:59:30Z", "2026-11-20T12:05:00Z"];
 
   assert.deepEqual(ages.map((at) => freshnessLine([entryAt(at)], NOW)), ["Roadmap last changed just now", "Roadmap last changed just now"]);
+});
+
+test("lastChangedAt names the newest decision's time, compared as instants whatever the offset, and null for an empty log", () => {
+  const entries = [entryAt("2026-11-17T09:00:00Z"), entryAt("2026-11-17T02:00:00-08:00"), entryAt("2026-11-12T09:00:00Z")];
+
+  assert.deepEqual([lastChangedAt(entries), lastChangedAt([])], ["2026-11-17T02:00:00-08:00", null]);
 });

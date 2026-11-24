@@ -9,9 +9,16 @@ const UNITS = [
 ];
 
 export function freshnessLine(entries, now) {
+  const changedAt = lastChangedAt(entries);
+  if (changedAt === null) return null;
+  return `Roadmap last changed ${agoWords(Date.parse(now) - Date.parse(changedAt))}`;
+}
+
+// Every change to the roadmap is written to the decision log, so its newest entry is the time
+// the roadmap last changed. Entries carry their own offsets, so they are compared as instants.
+export function lastChangedAt(entries) {
   if (entries.length === 0) return null;
-  const newest = Math.max(...entries.map((entry) => Date.parse(entry.at)));
-  return `Roadmap last changed ${agoWords(Date.parse(now) - newest)}`;
+  return entries.reduce((newest, entry) => (Date.parse(entry.at) > Date.parse(newest.at) ? entry : newest)).at;
 }
 
 export function agoWords(age) {
