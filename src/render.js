@@ -110,7 +110,9 @@ const STATE_MEANINGS = [
 
 const PARENT_STATE_WORDS = "A card with parts shows the state its parts give it: in progress if any part is, otherwise waiting if any part is blocked, and solved only when every part is.";
 
-export function renderReadingGuide(document, { freshness }) {
+const FORECAST_NOTE = "“85% likely” means 85 in 100 simulated runs of the work ahead, at the pace measured from this repository's history, finished the card within that many working hours, counted from now.";
+
+export function renderReadingGuide(document, { freshness, forecasted }) {
   const section = document.createElement("section");
   section.setAttribute("aria-label", "Reading guide");
   section.appendChild(textElement(document, "p", freshness));
@@ -118,6 +120,7 @@ export function renderReadingGuide(document, { freshness }) {
   details.appendChild(textElement(document, "summary", "How to read this roadmap"));
   details.appendChild(stateList(document));
   details.appendChild(textElement(document, "p", PARENT_STATE_WORDS));
+  if (forecasted) details.appendChild(textElement(document, "p", FORECAST_NOTE));
   section.appendChild(details);
   return section;
 }

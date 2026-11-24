@@ -327,6 +327,14 @@ test("renderReadingGuide explains each card state in the words its cards show, a
   assert.ok(details.textContent.includes("A card with parts shows the state its parts give it: in progress if any part is, otherwise waiting if any part is blocked, and solved only when every part is."));
 });
 
+test("renderReadingGuide explains the forecast's 85% likely only when the cards show a forecast", () => {
+  const note = "“85% likely” means 85 in 100 simulated runs of the work ahead, at the pace measured from this repository's history, finished the card within that many working hours, counted from now.";
+
+  const notes = [true, false].map((forecasted) => renderReadingGuide(createFakeDocument(), { freshness: "Roadmap last changed 3 days ago", forecasted }).textContent.includes(note));
+
+  assert.deepEqual(notes, [true, false]);
+});
+
 test("renderMotionToggle returns a button named Pause motion that is not pressed", () => {
   const document = createFakeDocument();
 
