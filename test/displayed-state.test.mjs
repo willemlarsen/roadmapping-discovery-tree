@@ -19,3 +19,14 @@ test("a parent whose parts have not started shows next, whatever its own status"
 
   assert.equal(shown.get("f"), "next");
 });
+
+test("a parent with a part in progress, now or merged, shows now", () => {
+  const problems = [
+    card("f", "blocked"), card("a", "now", "f"), card("b", "blocked", "f"),
+    card("g", "next"), card("c", "merged", "g"), card("d", "done", "g"),
+  ];
+
+  const shown = displayedStates(problems);
+
+  assert.deepEqual([shown.get("f"), shown.get("g")], ["now", "now"]);
+});
