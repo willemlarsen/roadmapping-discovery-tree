@@ -12,7 +12,8 @@ import { main as writePace } from "./pace.mjs";
 const AUTHOR = { name: "Sample Builder", email: "sample@example.com" };
 
 // Each build is one made-up working session on one of the product's own cards. The last build
-// of each product is still under way, so the forecast does not count it as a finished size.
+// of each product holds the newest commit, so the forecast treats it as still under way and
+// leaves it out of its finished build sizes (it is also short of the five-cycle minimum).
 export const SAMPLE_PRODUCTS = [
   {
     roadmapDir: "roadmap",

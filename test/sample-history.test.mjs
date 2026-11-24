@@ -4,7 +4,7 @@ import { cpSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { cli, defaultEnd, generatedAtFor, historyPlan, regenerate, workdaysEndingOn } from "../scripts/sample-history.mjs";
+import { cli, defaultEnd, generatedAtFor, historyPlan, regenerate, SAMPLE_PRODUCTS, workdaysEndingOn } from "../scripts/sample-history.mjs";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const SAMPLE_DIRS = ["roadmap", "products/seed-library/roadmap"];
@@ -74,6 +74,11 @@ test("regenerate builds each sample product's synthetic history and writes an ok
       assert.equal(pace.generatedAt, "2026-11-24T23:59:00Z", dir);
       assert.ok(pace.results.length > 0 && pace.results.every((result) => result.p85Hours > 0), dir);
     });
+    SAMPLE_PRODUCTS.forEach(({ roadmapDir, builds }) => assert.deepEqual(
+      readPace(root, roadmapDir).inputs.sizeSamples,
+      builds.slice(0, -1).map((build) => build.cycles).sort((left, right) => left - right),
+      `${roadmapDir}: every build but the last, which is still under way, is a finished size`,
+    ));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
