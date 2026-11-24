@@ -69,3 +69,14 @@ test("a parent whose work has started, a part done or paused, shows paused; one 
 
   assert.deepEqual([shown.get("f"), shown.get("g"), shown.get("h")], ["paused", "paused", "next"]);
 });
+
+test("a parent judges a part that is itself a parent by what that part shows", () => {
+  const problems = [
+    card("f", "blocked"), card("g", "next", "f"), card("a", "now", "g"), card("b", "next", "f"),
+    card("h", "next"), card("i", "now", "h"), card("c", "done", "i"), card("d", "next", "i"),
+  ];
+
+  const shown = displayedStates(problems);
+
+  assert.deepEqual([shown.get("f"), shown.get("g"), shown.get("h"), shown.get("i")], ["now", "now", "paused", "paused"]);
+});

@@ -15,7 +15,7 @@ const PARENT_RULES = [
 export function displayedStates(problems) {
   const stateOf = (problem) => {
     const parts = problems.filter((entry) => entry.parent === problem.id);
-    return parts.length === 0 ? problem.status : fromParts(parts.map((part) => part.status));
+    return parts.length === 0 ? problem.status : fromParts(parts.map(stateOf));
   };
   return new Map(problems.map((problem) => [problem.id, stateOf(problem)]));
 }
