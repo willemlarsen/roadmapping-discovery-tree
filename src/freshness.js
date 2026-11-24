@@ -14,7 +14,7 @@ export function freshnessLine(entries, now) {
   return `Roadmap last changed ${agoWords(Date.parse(now) - newest)}`;
 }
 
-function agoWords(age) {
+export function agoWords(age) {
   const unit = UNITS.find((candidate) => age >= candidate.milliseconds);
   if (!unit) return "just now";
   const count = Math.floor(age / unit.milliseconds);
