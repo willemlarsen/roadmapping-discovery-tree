@@ -124,7 +124,7 @@ test("a refused step stops the replay with exit 1 and its reason, and writes not
   assert.equal(result.exitCode, 1);
   assert.equal(readLog(copyDir).length, readLog(repoRoot).length + 1);
   assert.deepEqual(said, [
-    "Step 1 of 3: Reminders (gp-022) moves from next to now",
+    "Step 1 of 3: Reminders moves from next to now (gp-022)",
     "Step 2 of 3 not written: replay step refused: roadmap: gp-021 missing_field",
   ]);
   rmSync(dirname(copyDir), { recursive: true, force: true });
@@ -177,4 +177,19 @@ test("applyStep moves a card to a new status, dates it today, and writes one sta
   assert.deepEqual(roadmap.problems[1], card("gp-902", "now", 2, { statusSince: "2026-11-24" }));
   assert.deepEqual(lines, [{ at: AT, problemId: "gp-902", actor: "Tech Coach", action: "coach-status", before: "next", after: "now", why: "Its turn" }]);
   assert.equal(validateDecisionLog([...state().entries, ...lines], roadmap).valid, true);
+});
+
+test("each step's words name no card id; the replay adds the ids from the step's changes, once each", async () => {
+  const said = [];
+  const twoChanges = { say: "Two cards are re-ranked", actor: "Product Coach", why: "Cheaper first", changes: [{ card: "gp-007", order: 4 }, { card: "gp-006", order: 7 }, { card: "gp-007", order: 3 }] };
+  const copyDir = join(mkdtempSync(join(tmpdir(), "replay-")), "site");
+
+  await replay({
+    repoRoot, copyDir, steps: [twoChanges], waitMs: 0, pauseMs: 0,
+    sleep: async () => {}, now: () => new Date("2026-11-24T17:00:00Z"), log: (line) => said.push(line),
+  });
+
+  assert.deepEqual(GARDEN_STEPS.filter((step) => /\b[a-z]{2}-\d{3}\b/.test(step.say)).map((step) => step.say), []);
+  assert.equal(said[0], "Step 1 of 1: Two cards are re-ranked (gp-007, gp-006)");
+  rmSync(dirname(copyDir), { recursive: true, force: true });
 });

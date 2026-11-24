@@ -38,6 +38,9 @@ function writeState(copyDir, { roadmap, lines }) {
   appendFileSync(join(copyDir, ROADMAP_DIR, "decisions.jsonl"), lines.map((line) => `${JSON.stringify(line)}\n`).join(""));
 }
 
+// A step's words, then the cards it changes, each once, in the order the step lists them.
+const stepWords = (step) => `${step.say} (${[...new Set(step.changes.map((change) => change.card))].join(", ")})`;
+
 const isoSeconds = (date) => date.toISOString().replace(/\.\d{3}Z$/, "Z");
 
 // The copy's forecast is rebuilt from the synthetic sample history after every step and dated
@@ -68,7 +71,7 @@ export async function replay({ repoRoot, copyDir, steps, waitMs, pauseMs, sleep,
     }
     writeState(copyDir, applied);
     refreshPace(copyDir, at);
-    log(`${where}: ${step.say}`);
+    log(`${where}: ${stepWords(step)}`);
   }
   log("Replay finished; the copy stays in place until the next replay.");
   return { exitCode: 0 };
