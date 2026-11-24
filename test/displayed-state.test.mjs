@@ -57,3 +57,15 @@ test("a parent whose unsolved parts are all parked shows parked", () => {
 
   assert.deepEqual([shown.get("f"), shown.get("g")], ["parked", "parked"]);
 });
+
+test("a parent whose work has started, a part done or paused, shows paused; one beside only parked and next parts shows next", () => {
+  const problems = [
+    card("f", "next"), card("a", "done", "f"), card("b", "next", "f"),
+    card("g", "now"), card("c", "paused", "g"), card("d", "parked", "g"),
+    card("h", "now"), card("e", "next", "h"), card("i", "parked", "h"),
+  ];
+
+  const shown = displayedStates(problems);
+
+  assert.deepEqual([shown.get("f"), shown.get("g"), shown.get("h")], ["paused", "paused", "next"]);
+});

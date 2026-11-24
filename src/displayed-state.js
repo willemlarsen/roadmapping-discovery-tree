@@ -1,5 +1,7 @@
 const IN_PROGRESS = new Set(["now", "merged"]);
 const isDone = (state) => state === "done";
+// Work on the card has started and stopped: solved, or paused.
+const isStarted = (state) => isDone(state) || state === "paused";
 
 // First match wins; a parent no rule matches shows next.
 const PARENT_RULES = [
@@ -7,6 +9,7 @@ const PARENT_RULES = [
   { state: "blocked", holds: (states) => states.includes("blocked") },
   { state: "done", holds: (states) => states.every(isDone) },
   { state: "parked", holds: (states) => states.filter((state) => !isDone(state)).every((state) => state === "parked") },
+  { state: "paused", holds: (states) => states.some(isStarted) },
 ];
 
 export function displayedStates(problems) {
