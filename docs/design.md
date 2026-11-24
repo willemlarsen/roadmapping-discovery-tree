@@ -8,7 +8,8 @@ source of truth; this file explains the shape.
 The page reads three files from one roadmap directory (`roadmap/` by default, or a product's
 `roadmapRoot` from `portfolio/portfolio.json`):
 
-- `roadmap.json`: a goal, a work-in-progress limit, a staleness limit in days, and a list of
+- `roadmap.json`: a goal, a work-in-progress limit, a staleness limit in days (or `null` for no
+  re-rank reminder), and a list of
   problems. Each problem has an id, an optional parent (which makes the list a tree), a status
   (`next`, `now`, `blocked`, `paused`, `merged`, `done` or `parked`), the date it entered that
   status, an order among its siblings, the slices that address it, and an optional value and
@@ -72,7 +73,13 @@ All text from the data files is inserted as text, never as HTML.
 
 A roadmap is stale when the more recent of its last re-rank and the newest `statusSince` of a
 `now` or `blocked` problem is more than `staleAfterDays` whole days ago. The page then shows a
-warning at the top.
+warning at the top, cards stop pulsing, and the portfolio says the roadmap is stale.
+
+The reminder is optional per roadmap. `"staleAfterDays": null` switches it off: the roadmap is
+never stale, so none of the above happens. The key stays required, so a roadmap that leaves it
+out is still refused; any other value must be a whole number of days above zero. The two sample
+roadmaps switch the reminder off because their dates are frozen, and would otherwise always look
+out of date.
 
 A forecast is a different matter. `pace.json` is out of date only when the roadmap changed after
 the forecast was computed: when the newest decision-log entry is later than the file's
