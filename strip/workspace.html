@@ -55,6 +55,12 @@
   section[aria-label="Roadmap"] li > div > p { margin: 6px 0 0; font-size: 12px; font-weight: 600; color: var(--ink); }
   section[aria-label="Forecast inputs"], section[aria-label="Parked for later"] { max-width: var(--box-max); margin: var(--box-gap) auto 0; padding: var(--box-pad-y) var(--box-pad-x); border: var(--edge-width) solid var(--chrome-line); border-radius: var(--radius); font-size: var(--box-size); color: var(--chrome-muted); }
   section[aria-label="Forecast inputs"] ul { margin: 0; padding-left: var(--list-indent); }
+  section[aria-label="Reading guide"] { max-width: var(--box-max); margin: 0 auto var(--box-gap); font-size: var(--box-size); color: var(--chrome-muted); }
+  section[aria-label="Reading guide"] > p, section[aria-label="Reading guide"] summary { text-align: center; margin: 0 0 var(--label-margin); }
+  section[aria-label="Reading guide"] summary { color: var(--chrome-ink); cursor: pointer; }
+  section[aria-label="Reading guide"] summary:focus-visible { outline: var(--ring-width) solid var(--focus-ring); outline-offset: var(--ring-offset); }
+  section[aria-label="Reading guide"] details p { margin: var(--label-margin) 0 0; }
+  section[aria-label="Reading guide"] ul { margin: 0; padding-left: var(--list-indent); }
   section[aria-label="Parked for later"] > h2 { color: var(--chrome-muted); font-size: var(--label-size); letter-spacing: var(--label-tracking); text-transform: uppercase; margin: 0 0 var(--label-margin); }
   [role="alert"] { max-width: 520px; margin: 40px auto; padding: 14px 16px; border: 2px solid var(--alert-edge); background: var(--alert-bg); border-radius: 8px; }
   #main > div > p { text-align: center; color: var(--muted); font-size: 13px; margin-top: 24px; }

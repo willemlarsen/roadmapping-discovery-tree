@@ -389,7 +389,7 @@ const CARD_TREE_FOCUS = `(() => {
 
 async function cardTreeByKeyboard(send) {
   await evaluate(pollUntilFound(ROADMAP_CARDS, "() => true"))(send);
-  for (let presses = 0; presses < 5 && (await evaluate(CARD_TREE_FOCUS)(send)).name !== "Card tree"; presses++) await press(send, TAB);
+  for (let presses = 0; presses < 8 && (await evaluate(CARD_TREE_FOCUS)(send)).name !== "Card tree"; presses++) await press(send, TAB);
   const focused = await evaluate(CARD_TREE_FOCUS)(send);
   for (let presses = 0; presses < 5; presses++) await press(send, ARROW_RIGHT);
   // Arrow-key scrolling is smooth, so give it a moment to move.
@@ -774,6 +774,40 @@ test("a changed served roadmap replaces the view while the Pause motion button k
   assert.equal(seen.waited.found, true, "the new title never appeared");
   assert.equal(seen.after.focused, true, "focus left the Pause motion button when the view was replaced");
   assert.ok(Math.abs(seen.after.scrollY - seen.before.scrollY) <= 1, `scroll moved from ${seen.before.scrollY} to ${seen.after.scrollY}`);
+});
+
+const READING_GUIDE = `(() => {
+  const guide = document.querySelector('section[aria-label="Reading guide"]');
+  const box = guide.getBoundingClientRect();
+  return {
+    open: guide.querySelector("details").open,
+    listShown: guide.querySelector("details > ul").checkVisibility(),
+    summaryFocused: document.activeElement === guide.querySelector("summary"),
+    narrow: box.width <= 520,
+    centred: Math.abs(box.left + box.width / 2 - document.documentElement.clientWidth / 2) <= 1,
+    aboveTree: box.bottom <= ${CARD_TREE}.getBoundingClientRect().top,
+  };
+})()`;
+
+async function readingGuideByKeyboard(send) {
+  await evaluate(pollUntilFound(ROADMAP_CARDS, "() => true"))(send);
+  const closed = await evaluate(READING_GUIDE)(send);
+  for (let presses = 0; presses < 5 && !(await evaluate(READING_GUIDE)(send)).summaryFocused; presses++) await press(send, TAB);
+  await press(send, ENTER);
+  return { closed, opened: await evaluate(READING_GUIDE)(send) };
+}
+
+test("the reading guide sits above the tree in a narrow centred box, starts closed, and opens from the keyboard by Tab and Enter on How to read this roadmap", async () => {
+  const server = await serveRepo();
+  const url = `http://127.0.0.1:${server.address().port}/strip/index.html`;
+
+  const seen = await withPage(url, readingGuideByKeyboard, { width: 1200 }).finally(() => server.close());
+
+  const placed = { narrow: true, centred: true, aboveTree: true };
+  assert.deepEqual(seen, {
+    closed: { open: false, listShown: false, summaryFocused: false, ...placed },
+    opened: { open: true, listShown: true, summaryFocused: true, ...placed },
+  });
 });
 
 const CARD_TREE_PLACE = `(() => {
