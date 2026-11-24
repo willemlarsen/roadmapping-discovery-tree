@@ -15,6 +15,7 @@ export function freshnessLine(entries, now) {
 
 function agoWords(age) {
   const unit = UNITS.find((candidate) => age >= candidate.milliseconds);
+  if (!unit) return "just now";
   const count = Math.floor(age / unit.milliseconds);
   return `${count} ${count === 1 ? unit.name : `${unit.name}s`} ago`;
 }
