@@ -1,6 +1,7 @@
 import { buildTree } from "./tree.js";
-import { renderForecastInputs, renderParked, renderReadingGuide, renderStaleness, renderTree, renderWip } from "./render.js";
+import { renderForecastInputs, renderParked, renderReadingGuide, renderRecentDecisions, renderStaleness, renderTree, renderWip } from "./render.js";
 import { freshnessLine } from "./freshness.js";
+import { recentDecisions } from "./recent-decisions.js";
 import { wipStatus } from "./wip.js";
 import { pulsingIds } from "./pulse.js";
 import { staleness } from "./stale.js";
@@ -88,6 +89,7 @@ function showTree({ roadmap, entries }, cardView, { document, emit, now, showRea
   view.appendChild(renderReadingGuide(document, { freshness: freshnessLine(entries, at), forecasted: forecast.state === "ok" }));
   view.appendChild(renderTree(tree, document, { ...cardView, pulsing }));
   showReadAt(renderReadAt(document, at, entries), at, entries);
+  appendIfShown(view, renderRecentDecisions(recentDecisions(entries, roadmap, at), document));
   appendIfShown(view, renderForecastInputs(forecast, document));
   appendIfShown(view, renderParked(tree, document));
   return view;

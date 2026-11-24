@@ -61,7 +61,8 @@ problems it is solving now, and links to each product's tree.
 ## 3. Audit trail
 
 The "last re-ranked" line is derived from the latest `coach-rerank` entry in the decision log,
-never hand-written.
+never hand-written. Under the tree, a "Recent decisions" list tells the five newest log entries,
+newest first, as who did what to which card and how long ago (`src/recent-decisions.js`).
 
 ## 4. Untrusted text
 

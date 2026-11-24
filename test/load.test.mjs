@@ -826,3 +826,27 @@ test("createReadAtStatus says no roadmap has been read yet when it fails before 
     `Could not refresh; showing the roadmap read at ${new Date(readTime).toLocaleTimeString()}`,
   ]);
 });
+
+test("an empty decision log shows no Recent decisions section", async () => {
+  const { shown } = await load(servingLog(""));
+
+  assert.equal(partNamed(shown, "Recent decisions"), undefined);
+});
+
+test("the page lists the newest decisions after the tree, under a Recent decisions heading, newest first", async () => {
+  const log = [
+    { at: "2026-11-01T09:00:00Z", problemId: "up-001", actor: "Product Coach", action: "coach-add", before: null, after: "now", why: "Seeded" },
+    { at: "2026-11-01T11:00:00Z", problemId: "up-002", actor: "Tech Coach", action: "coach-add", before: null, after: "next", why: "Seeded" },
+  ].map((line) => JSON.stringify(line)).join("\n");
+
+  const { shown } = await load(servingLog(log));
+
+  const recent = partNamed(shown, "Recent decisions");
+  assert.ok(shown.children.indexOf(recent) > shown.children.indexOf(treeOf(shown)));
+  assert.equal(recent.children[0].tagName, "H2");
+  assert.equal(recent.children[0].textContent, "Recent decisions");
+  assert.deepEqual(allElements(recent).filter((element) => element.tagName === "LI").map((item) => item.textContent), [
+    "Tech Coach added “Peek under the hood” as next, 1 hour ago",
+    "Product Coach added “See where we are” as now, 3 hours ago",
+  ]);
+});

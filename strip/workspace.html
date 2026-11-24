@@ -53,8 +53,9 @@
   section[aria-label="Roadmap"] li > div > div[role="group"] { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); }
   section[aria-label="Roadmap"] li > div > div[role="group"] > span { display: block; margin-top: 3px; }
   section[aria-label="Roadmap"] li > div > p { margin: 6px 0 0; font-size: 12px; font-weight: 600; color: var(--ink); }
-  section[aria-label="Forecast inputs"], section[aria-label="Parked for later"] { max-width: var(--box-max); margin: var(--box-gap) auto 0; padding: var(--box-pad-y) var(--box-pad-x); border: var(--edge-width) solid var(--chrome-line); border-radius: var(--radius); font-size: var(--box-size); color: var(--chrome-muted); }
-  section[aria-label="Forecast inputs"] ul { margin: 0; padding-left: var(--list-indent); }
+  section[aria-label="Forecast inputs"], section[aria-label="Parked for later"], section[aria-label="Recent decisions"] { max-width: var(--box-max); margin: var(--box-gap) auto 0; padding: var(--box-pad-y) var(--box-pad-x); border: var(--edge-width) solid var(--chrome-line); border-radius: var(--radius); font-size: var(--box-size); color: var(--chrome-muted); }
+  section[aria-label="Forecast inputs"] ul, section[aria-label="Recent decisions"] ul { margin: 0; padding-left: var(--list-indent); }
+  section[aria-label="Recent decisions"] > h2 { color: var(--chrome-ink); font-size: inherit; margin: 0 0 var(--label-margin); }
   section[aria-label="Reading guide"] { max-width: var(--box-max); margin: 0 auto var(--box-gap); font-size: var(--box-size); color: var(--chrome-muted); }
   section[aria-label="Reading guide"] > p, section[aria-label="Reading guide"] summary { text-align: center; margin: 0 0 var(--label-margin); }
   section[aria-label="Reading guide"] summary { color: var(--chrome-ink); cursor: pointer; }

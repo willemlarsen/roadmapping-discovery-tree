@@ -68,6 +68,17 @@ export function renderForecastInputs(forecast, document) {
   return section;
 }
 
+export function renderRecentDecisions(lines, document) {
+  if (lines.length === 0) return null;
+  const section = document.createElement("section");
+  section.setAttribute("aria-label", "Recent decisions");
+  section.appendChild(textElement(document, "h2", "Recent decisions"));
+  const list = document.createElement("ul");
+  lines.forEach((line) => list.appendChild(textElement(document, "li", line)));
+  section.appendChild(list);
+  return section;
+}
+
 export function renderWip({ count, limit }, document) {
   if (count === 0) return textElement(document, "p", "Nothing in progress");
   if (count <= limit) return textElement(document, "p", `Work in progress ${count} of ${limit}`);
