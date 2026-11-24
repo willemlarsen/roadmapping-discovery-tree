@@ -2,7 +2,7 @@
   "version": 1,
   "goal": "Members can borrow seeds and return saved seeds without a volunteer on site",
   "wipLimit": 1,
-  "staleAfterDays": 7,
+  "staleAfterDays": null,
   "problems": [
     {
       "id": "sl-001",

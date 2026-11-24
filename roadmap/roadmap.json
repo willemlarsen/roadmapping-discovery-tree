@@ -2,7 +2,7 @@
   "version": 1,
   "goal": "Gardeners always know what is planted, where, and what needs doing next",
   "wipLimit": 2,
-  "staleAfterDays": 7,
+  "staleAfterDays": null,
   "problems": [
     {
       "id": "gp-001",

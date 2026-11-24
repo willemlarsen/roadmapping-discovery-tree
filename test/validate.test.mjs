@@ -547,6 +547,13 @@ test("a hand-written lastRerank fails with unknown_field", () => {
   assert.deepEqual(results, [verdictOf([{ problemId: null, reason: "unknown_field" }]), verdictOf([])]);
 });
 
+test("both sample roadmaps switch the re-rank reminder off, because their dates are frozen", async () => {
+  const paths = ["../roadmap/roadmap.json", "../products/seed-library/roadmap/roadmap.json"];
+  const roadmaps = await Promise.all(paths.map(async (path) => JSON.parse(await readFile(new URL(path, import.meta.url), "utf8"))));
+
+  assert.deepEqual(roadmaps.map((roadmap) => roadmap.staleAfterDays), [null, null]);
+});
+
 test("the live roadmap and decision log validate under every rule, including next_has_now_descendant", async () => {
   const roadmap = JSON.parse(await readFile(new URL("../roadmap/roadmap.json", import.meta.url), "utf8"));
   const lines = (await readFile(new URL("../roadmap/decisions.jsonl", import.meta.url), "utf8")).split("\n").filter((line) => line.trim() !== "");
