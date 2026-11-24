@@ -335,6 +335,21 @@ test("the page shows the forecast's inputs whenever the pace file is valid and n
   ]);
 });
 
+test("the reading guide sits just before the tree, says how long ago the log last changed, and explains 85% likely only when the forecast is shown", async () => {
+  const guideOf = (shown) => {
+    const guide = partNamed(shown, "Reading guide");
+    return { beforeTree: shown.children.indexOf(guide) === shown.children.indexOf(treeOf(shown)) - 1, freshness: guide.children[0].textContent, explainsForecast: guide.textContent.includes("85% likely") };
+  };
+
+  const forecasted = await loadAt(servedAs(validPace()), "2026-11-01T15:00:00Z");
+  const unforecast = await loadAt(servedAs(insufficientPace()), "2026-11-03T12:00:00Z");
+
+  assert.deepEqual([forecasted, unforecast].map(guideOf), [
+    { beforeTree: true, freshness: "Roadmap last changed 3 hours ago", explainsForecast: true },
+    { beforeTree: true, freshness: "Roadmap last changed 2 days ago", explainsForecast: false },
+  ]);
+});
+
 test("the forecast inputs say that hours are working hours counted from now, only when there is a pace", async () => {
   const inputWords = (shown) => allElements(inputsOf(shown)).filter((element) => element.tagName === "LI").map((item) => item.textContent);
   const hoursWords = "Hours are working hours at the measured pace, counted from now, one card after another.";
