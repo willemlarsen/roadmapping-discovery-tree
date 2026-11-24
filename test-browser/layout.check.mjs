@@ -336,19 +336,20 @@ const ROADMAP_CARDS = `[...document.querySelectorAll('section[aria-label="Roadma
 
 const CARD_TREE = `document.querySelector('[role="region"][aria-label="Card tree"]')`;
 
-// Reads the page, scrolls the card tree to its far end, and reads it again.
-const HEADER_WHILE_TREE_SCROLLS = pollUntilFound(ROADMAP_CARDS, `() => {
+// Reads the page, scrolls the card tree to its far end, and reads it again. The header is the
+// status line, the goal and the work-in-progress line in the tree's container.
+const headerWhileTreeScrolls = (containerId) => pollUntilFound(ROADMAP_CARDS, `() => {
   const root = document.documentElement;
-  const app = document.getElementById("app");
+  const container = document.getElementById("${containerId}");
   const tree = ${CARD_TREE};
-  const lefts = () => ["#read-at", 'section[aria-label="Roadmap"] > h1', "#app > div > p"].map((selector) => document.querySelector(selector).getBoundingClientRect().left);
-  const read = () => ({ pageOverflow: root.scrollWidth - root.clientWidth, appOverflow: app.scrollWidth - app.clientWidth, lefts: lefts() });
+  const lefts = () => ["#read-at", 'section[aria-label="Roadmap"] > h1', "#${containerId} > div > p"].map((selector) => document.querySelector(selector).getBoundingClientRect().left);
+  const read = () => ({ pageOverflow: root.scrollWidth - root.clientWidth, containerOverflow: container.scrollWidth - container.clientWidth, lefts: lefts() });
   const before = read();
   tree.scrollLeft = tree.scrollWidth;
   const after = read();
   return {
     pageOverflow: Math.max(before.pageOverflow, after.pageOverflow),
-    appOverflow: Math.max(before.appOverflow, after.appOverflow),
+    containerOverflow: Math.max(before.containerOverflow, after.containerOverflow),
     headerMovedBy: Math.max(...before.lefts.map((left, index) => Math.abs(after.lefts[index] - left))),
     treeScrolls: tree.scrollWidth > tree.clientWidth,
     treeScrolled: tree.scrollLeft > 0,
@@ -360,13 +361,23 @@ test("a tree wider than the window scrolls sideways inside the Card tree region 
   const url = `http://127.0.0.1:${server.address().port}/strip/index.html`;
 
   const layouts = {};
-  for (const width of [ZOOMED_WIDTH, 390]) layouts[width] = await withPage(url, evaluate(HEADER_WHILE_TREE_SCROLLS), { width });
+  for (const width of [ZOOMED_WIDTH, 390]) layouts[width] = await withPage(url, evaluate(headerWhileTreeScrolls("app")), { width });
   server.close();
 
   assert.deepEqual(layouts, {
-    [ZOOMED_WIDTH]: { pageOverflow: 0, appOverflow: 0, headerMovedBy: 0, treeScrolls: true, treeScrolled: true },
-    390: { pageOverflow: 0, appOverflow: 0, headerMovedBy: 0, treeScrolls: false, treeScrolled: false },
+    [ZOOMED_WIDTH]: { pageOverflow: 0, containerOverflow: 0, headerMovedBy: 0, treeScrolls: true, treeScrolled: true },
+    390: { pageOverflow: 0, containerOverflow: 0, headerMovedBy: 0, treeScrolls: false, treeScrolled: false },
   });
+});
+
+test("a workspace page opened with ?product=beta whose tree is wider than its main area scrolls the tree sideways inside the Card tree region while the page, the status line, the goal and the work-in-progress line stay still", async () => {
+  const overrides = await portfolioOverrides();
+  for (const file of ["roadmap.json", "decisions.jsonl"]) overrides.set(`/products/beta/roadmap/${file}`, await readFile(join(ROOT, "roadmap", file)));
+  const server = await serveRepo(overrides);
+
+  const layout = await withPage(workspaceUrl(server, "beta"), evaluate(headerWhileTreeScrolls("main")), { width: 1200 }).finally(() => server.close());
+
+  assert.deepEqual(layout, { pageOverflow: 0, containerOverflow: 0, headerMovedBy: 0, treeScrolls: true, treeScrolled: true });
 });
 
 const PULSE_NAMES = pollUntilFound(ROADMAP_CARDS, `(cards) => {
