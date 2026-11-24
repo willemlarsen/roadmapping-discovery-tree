@@ -61,6 +61,26 @@ python3 -m http.server 8000
 # or http://localhost:8000/strip/index.html for the Community Garden Planner tree
 ```
 
+## Watch it change
+
+The tree page re-reads its files every few seconds and redraws when they change.
+`scripts/replay.mjs` shows that: it copies the pages and the sample data into `.replay/`
+(ignored by git; the committed sample is never touched), then steps the Community Garden
+Planner through six made-up changes, each written only after it passes the roadmap and
+decision-log checks: a part moves from next to now, both parts of a card are solved so the card
+shows solved, the card is confirmed, a re-rank, and the re-ranked card's part starts. Each
+change appends who made it and why to the copy's decision log, which the page lists under
+"Recent decisions", and the copy's forecast is rebuilt from the sample history.
+
+```
+npm run replay                                     # terminal 1: copies, waits 15 s, then a step every 6 s
+python3 -m http.server 8000 --directory .replay    # terminal 2, within those 15 s
+# open http://localhost:8000/strip/index.html
+```
+
+`npm run replay -- --wait 5 --pause 3` changes the lead-in and the pause between steps
+(seconds). Pauses under about 5 seconds can let the page skip a step. Run it again to start over.
+
 ## Tests
 
 ```

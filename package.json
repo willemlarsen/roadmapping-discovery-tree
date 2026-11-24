@@ -10,6 +10,7 @@
     "pace": "node scripts/pace.mjs",
     "backtest": "node scripts/backtest.mjs",
     "sample-history": "node scripts/sample-history.mjs",
+    "replay": "node scripts/replay.mjs",
     "kit": "node scripts/build-kit.mjs"
   }
 }

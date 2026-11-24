@@ -4,7 +4,7 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSy
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { applyStep, GARDEN_STEPS, replay } from "../scripts/replay.mjs";
+import { applyStep, GARDEN_STEPS, replay, replayOptions } from "../scripts/replay.mjs";
 import { validateDecisionLog } from "../src/decisions.js";
 import { displayedStates } from "../src/displayed-state.js";
 import { forecastOrder } from "../src/pace/order.js";
@@ -155,6 +155,14 @@ test("a second replay into the same copy starts again from the committed sample"
   assert.equal(second.exitCode, 0);
   assert.equal(readLog(copyDir).length, readLog(repoRoot).length + 1);
   rmSync(dirname(copyDir), { recursive: true, force: true });
+});
+
+test("replayOptions waits 15 s before the first step and 6 s between steps unless told otherwise, and refuses anything else", () => {
+  assert.deepEqual(replayOptions([]), { waitMs: 15000, pauseMs: 6000 });
+  assert.deepEqual(replayOptions(["--pause", "3"]), { waitMs: 15000, pauseMs: 3000 });
+  assert.deepEqual(replayOptions(["--wait", "0", "--pause", "2.5"]), { waitMs: 0, pauseMs: 2500 });
+  [["--pause"], ["--pause", "-1"], ["--pause", "soon"], ["--speed", "2"], ["--wait", "601"]]
+    .forEach((argv) => assert.equal(replayOptions(argv), null, argv.join(" ")));
 });
 
 test("applyStep moves a card to a new status, dates it today, and writes one status line with who and why", () => {

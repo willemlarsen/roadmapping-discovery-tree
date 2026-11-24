@@ -1,7 +1,8 @@
 // Replays a short, made-up sequence of roadmap changes against a COPY of the sample, so a page
 // served from that copy redraws as each change lands. The committed sample files are never touched.
 import { appendFileSync, cpSync, existsSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { validateDecisionLog } from "../src/decisions.js";
 import { validateRoadmap } from "../src/validate.js";
 import { defaultEnd, regenerate } from "./sample-history.mjs";
@@ -159,4 +160,44 @@ export function applyStep(step, { roadmap, entries }, at) {
   const next = { ...roadmap, problems: roadmap.problems.map((problem) => byId.get(problem.id)) };
   refuseUnlessValid(next, [...entries, ...lines]);
   return { roadmap: next, lines };
+}
+
+// The page re-reads its files every 5 seconds, so the default pause is a little longer than that:
+// with a shorter pause the page can skip a step.
+const DEFAULT_OPTIONS = { waitMs: 15000, pauseMs: 6000 };
+const OPTION_OF_FLAG = new Map([["--wait", "waitMs"], ["--pause", "pauseMs"]]);
+const MAX_SECONDS = 600;
+const SECONDS = /^\d+(\.\d+)?$/;
+
+export function replayOptions(argv) {
+  const options = { ...DEFAULT_OPTIONS };
+  for (let index = 0; index < argv.length; index += 2) {
+    const option = OPTION_OF_FLAG.get(argv[index]);
+    const value = argv[index + 1];
+    if (option === undefined || !SECONDS.test(value ?? "") || Number(value) > MAX_SECONDS) return null;
+    options[option] = Number(value) * 1000;
+  }
+  return options;
+}
+
+const USAGE = "replay not started: usage (accepted: --wait <seconds>, --pause <seconds>)";
+const COPY_DIR = ".replay";
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
+  const options = replayOptions(process.argv.slice(2));
+  if (options === null) {
+    console.error(USAGE);
+    process.exitCode = 1;
+  } else {
+    console.log(`Copying the sample site to ${COPY_DIR}/. Serve it and open the tree page:`);
+    console.log(`  python3 -m http.server 8000 --directory ${COPY_DIR}`);
+    console.log("  http://localhost:8000/strip/index.html");
+    console.log(`The first change lands in ${options.waitMs / 1000} s, then one every ${options.pauseMs / 1000} s.`);
+    const result = await replay({
+      repoRoot, copyDir: join(repoRoot, COPY_DIR), steps: GARDEN_STEPS, ...options,
+      sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)), now: () => new Date(), log: console.log,
+    });
+    process.exitCode = result.exitCode;
+  }
 }
