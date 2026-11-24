@@ -335,6 +335,12 @@ test("renderReadingGuide explains the forecast's 85% likely only when the cards 
   assert.deepEqual(notes, [true, false]);
 });
 
+test("renderReadingGuide ends by saying where changes are recorded", () => {
+  const details = renderReadingGuide(createFakeDocument(), { freshness: "Roadmap last changed 3 days ago", forecasted: true }).children[1];
+
+  assert.equal(details.children.at(-1).textContent, "Every change to the roadmap is written to its decision log, with who made it and why. The line at the top of the page names the last re-rank and the last estimate change.");
+});
+
 test("renderMotionToggle returns a button named Pause motion that is not pressed", () => {
   const document = createFakeDocument();
 

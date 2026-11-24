@@ -112,6 +112,8 @@ const PARENT_STATE_WORDS = "A card with parts shows the state its parts give it:
 
 const FORECAST_NOTE = "“85% likely” means 85 in 100 simulated runs of the work ahead, at the pace measured from this repository's history, finished the card within that many working hours, counted from now.";
 
+const DECISION_LOG_WORDS = "Every change to the roadmap is written to its decision log, with who made it and why. The line at the top of the page names the last re-rank and the last estimate change.";
+
 export function renderReadingGuide(document, { freshness, forecasted }) {
   const section = document.createElement("section");
   section.setAttribute("aria-label", "Reading guide");
@@ -121,6 +123,7 @@ export function renderReadingGuide(document, { freshness, forecasted }) {
   details.appendChild(stateList(document));
   details.appendChild(textElement(document, "p", PARENT_STATE_WORDS));
   if (forecasted) details.appendChild(textElement(document, "p", FORECAST_NOTE));
+  details.appendChild(textElement(document, "p", DECISION_LOG_WORDS));
   section.appendChild(details);
   return section;
 }
