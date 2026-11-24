@@ -192,6 +192,14 @@ test("renderTree puts each card's status in a data-status attribute for styling"
   assert.deepEqual(items.map((item) => item.children[0].attributes["data-status"]), ["now", "next"]);
 });
 
+test("renderTree shows a card's state from view.shown, in its words and its data-status, over its own status", () => {
+  const view = { shown: new Map([["up-001", "next"], ["up-003", "next"], ["up-002", "next"]]) };
+
+  const items = renderTree(nestedTree, createFakeDocument(), view).children[1].children;
+
+  assert.deepEqual(items.map((item) => [item.children[0].attributes["data-status"], item.children[0].children[0].textContent]), [["next", "Next"], ["next", "Next"]]);
+});
+
 test("renderTree stamps data-started on a card in view.started and on no other card", () => {
   const view = { started: new Map([["up-001", "1 of 2 parts solved"]]) };
 

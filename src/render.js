@@ -121,8 +121,12 @@ function renderCard(node, document, view) {
   return card;
 }
 
+function shownState(node, view) {
+  return view.shown?.get(node.id) ?? node.status;
+}
+
 function stampCard(card, node, view) {
-  card.setAttribute("data-status", node.status);
+  card.setAttribute("data-status", shownState(node, view));
   if (view.started?.has(node.id)) card.setAttribute("data-started", "");
   if (view.pulsing?.has(node.id)) card.setAttribute("data-pulse", "");
 }
@@ -136,7 +140,7 @@ function renderLabel(node, document, view) {
 }
 
 function statusWords(node, view) {
-  return view.started?.has(node.id) ? "Started" : STATUS_LINES[node.status](node);
+  return view.started?.has(node.id) ? "Started" : STATUS_LINES[shownState(node, view)](node);
 }
 
 function hiddenText(document, text) {
