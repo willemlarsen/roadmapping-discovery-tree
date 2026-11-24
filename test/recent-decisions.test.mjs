@@ -50,3 +50,20 @@ test("recentDecisions tells the newest log entries first, each as who did what t
     "Tech Coach moved “Remind gardeners” from next to now, 3 hours ago",
   ]);
 });
+
+test("recentDecisions picks the newest by time, not by place in the file, and among entries at the same time tells the later line in the file first", () => {
+  const entries = [
+    entry("2026-11-24T11:00:00Z", "gp-021", "coach-confirm-done", "now", "done"),
+    entry("2026-11-24T08:00:00Z", "gp-022", "coach-add", null, "next"),
+    entry("2026-11-24T03:00:00-08:00", "gp-022", "coach-status", "next", "now", "Tech Coach"),
+    entry("2026-11-24T11:00:00Z", "gp-022", "coach-rerank", "3", "2"),
+  ];
+
+  const lines = recentDecisions(entries, roadmap, "2026-11-24T12:00:00Z", 3);
+
+  assert.deepEqual(lines, [
+    "Product Coach re-ranked “Remind gardeners” from 3 to 2, 1 hour ago",
+    "Tech Coach moved “Remind gardeners” from next to now, 1 hour ago",
+    "Product Coach confirmed “List tasks by bed” solved, 1 hour ago",
+  ]);
+});
