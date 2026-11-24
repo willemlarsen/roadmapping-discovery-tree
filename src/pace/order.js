@@ -1,9 +1,11 @@
 import { sortSiblings } from "../tree.js";
 import { ancestorsAbove } from "../validate.js";
 
-const ACTIVE_STATUSES = ["now", "next"];
+// Cards in play or lined up next, as `activeProblems` lists them.
+const PLANNED_STATUSES = ["now", "next"];
 
-const FORECAST_STATUSES = new Set(["now", "paused", "next"]);
+// Cards the forecast gives hours to: planned cards and paused ones, which will resume.
+const FORECASTABLE_STATUSES = new Set(["now", "paused", "next"]);
 
 const STARTED_STATUSES = new Set(["done", "paused"]);
 
@@ -33,6 +35,7 @@ function inRankBands(leaves, fileLeaves, parentOf) {
 
 // Waiters are placed targets first (by chain depth, then walk order), each directly after the last
 // card already placed in its target's group, or at the end when the group has none.
+// belongsTo and depthOf terminate only because validation (resumesAfterCycleErrors) refused cycles.
 function withWaitersAfterTargets(ranked, waiting, parentOf) {
   const waiterById = new Map(waiting.map((waiter) => [waiter.id, waiter]));
   const isAtOrUnder = (id, target) => id === target || ancestorsAbove(id, parentOf).includes(target);
@@ -56,7 +59,7 @@ function insertAfter(sequence, anchor, card) {
 
 // A forecast leaf: a now, paused or next card with no now, paused or next part.
 function forecastLeaves(problems) {
-  const forecastable = walkInSiblingOrder(problems, null).filter((problem) => FORECAST_STATUSES.has(problem.status));
+  const forecastable = walkInSiblingOrder(problems, null).filter((problem) => FORECASTABLE_STATUSES.has(problem.status));
   const parentIds = new Set(forecastable.map((problem) => problem.parent));
   return forecastable.filter((problem) => !parentIds.has(problem.id));
 }
@@ -79,13 +82,10 @@ function leavesInFile(problems) {
   return problems.filter((problem) => !parentIds.has(problem.id));
 }
 
+// Now cards, then next cards, each in tree walk order.
 export function activeProblems(problems) {
-  return walkedByStatus(problems, ACTIVE_STATUSES);
-}
-
-function walkedByStatus(problems, statuses) {
   const walked = walkInSiblingOrder(problems, null);
-  return statuses.flatMap((status) => walked.filter((problem) => problem.status === status));
+  return PLANNED_STATUSES.flatMap((status) => walked.filter((problem) => problem.status === status));
 }
 
 function walkInSiblingOrder(problems, parentId) {
