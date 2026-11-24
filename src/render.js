@@ -96,14 +96,36 @@ export function renderStaleness({ days, stale }, document) {
   return warning;
 }
 
+// What each state means, in the order a card moves through them. The guide names each state
+// in the words a card with no details of its own shows.
+const STATE_MEANINGS = [
+  ["now", "work on it is under way."],
+  ["next", "not started yet; it waits its turn."],
+  ["blocked", "held up by something outside it, named on the card when it is known."],
+  ["paused", "work started and stopped; the card says what it resumes after when it is known."],
+  ["merged", "the work is in and waits for someone to confirm it solves the problem."],
+  ["done", "confirmed solved."],
+  ["parked", "set aside for later, and listed under the tree."],
+];
+
+const PARENT_STATE_WORDS = "A card with parts shows the state its parts give it: in progress if any part is, otherwise waiting if any part is blocked, and solved only when every part is.";
+
 export function renderReadingGuide(document, { freshness }) {
   const section = document.createElement("section");
   section.setAttribute("aria-label", "Reading guide");
   section.appendChild(textElement(document, "p", freshness));
   const details = document.createElement("details");
   details.appendChild(textElement(document, "summary", "How to read this roadmap"));
+  details.appendChild(stateList(document));
+  details.appendChild(textElement(document, "p", PARENT_STATE_WORDS));
   section.appendChild(details);
   return section;
+}
+
+function stateList(document) {
+  const list = document.createElement("ul");
+  STATE_MEANINGS.forEach(([state, meaning]) => list.appendChild(textElement(document, "li", `${STATUS_LINES[state]({})}: ${meaning}`)));
+  return list;
 }
 
 export function renderParked(tree, document) {

@@ -310,6 +310,23 @@ test("renderReadingGuide shows the freshness line, then a closed details whose s
   );
 });
 
+test("renderReadingGuide explains each card state in the words its cards show, and that a card with parts shows the state they give it", () => {
+  const guide = renderReadingGuide(createFakeDocument(), { freshness: "Roadmap last changed 3 days ago", forecasted: false });
+
+  const details = guide.children[1];
+  const states = details.children.find((part) => part.tagName === "UL").children.map((item) => item.textContent);
+  assert.deepEqual(states, [
+    "Solving now: work on it is under way.",
+    "Next: not started yet; it waits its turn.",
+    "Waiting: held up by something outside it, named on the card when it is known.",
+    "Paused: work started and stopped; the card says what it resumes after when it is known.",
+    "Merged, awaiting check: the work is in and waits for someone to confirm it solves the problem.",
+    "Solved ✓: confirmed solved.",
+    "Parked: set aside for later, and listed under the tree.",
+  ]);
+  assert.ok(details.textContent.includes("A card with parts shows the state its parts give it: in progress if any part is, otherwise waiting if any part is blocked, and solved only when every part is."));
+});
+
 test("renderMotionToggle returns a button named Pause motion that is not pressed", () => {
   const document = createFakeDocument();
 
