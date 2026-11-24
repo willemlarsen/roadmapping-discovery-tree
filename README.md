@@ -31,6 +31,22 @@ The repository ships with sample data for two fictional products:
 - `products/seed-library/roadmap/`: Seed Library
 - `portfolio/portfolio.json`: the registry that lists both
 
+The sample forecasts (both `pace.json` files) are computed from a **synthetic** git history, not
+from this repository's own commits, which are too few. `scripts/sample-history.mjs` builds that
+history in a temporary directory: a fixed made-up author, backdated cycle commits that name the
+sample products' own cards, made-up session tokens, a few cycles a day over the last two to three
+weeks of workdays. It then runs `scripts/pace.mjs --git <that directory>` for each product and
+deletes the history. To regenerate (the page treats a pace file over three days old as out of
+date):
+
+```
+npm run sample-history                       # the history ends yesterday
+npm run sample-history -- --end 2026-11-23   # or on a given day; same day, same files
+```
+
+`test/sample-history.test.mjs` fails if the committed sample pace files differ from what the
+script writes for their day.
+
 `docs/design.md` describes the data and the layout; `docs/pace-cli.md` and
 `docs/pace-backtest.md` describe the forecast.
 
@@ -64,8 +80,9 @@ npm run pace
 The page treats a missing, malformed, outdated or more-than-three-days-old file as "forecast
 unavailable" and says why. The forecast needs several days of history with cycle commits (a
 subject like `C1: <behaviour> (gov-<session id>)`); with too little history the file is written
-with status `insufficient` and the page shows no forecast, which is what the sample repository
-shows until it has that history. Commit `roadmap/pace.json` after regenerating it.
+with status `insufficient` and the page shows no forecast. This repository's own history is that
+short, which is why the sample pace files come from the synthetic history described under
+[Sample data](#sample-data) instead. Commit the pace file after regenerating it.
 
 Built by Willem Larsen with AI agents under the ClickChain governance model.
 

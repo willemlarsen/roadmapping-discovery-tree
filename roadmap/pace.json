@@ -1,20 +1,74 @@
 {
   "contractVersion": 3,
   "generator": "scripts/pace.mjs",
-  "generatedAt": "2026-11-19T23:25:44Z",
+  "generatedAt": "2026-11-23T23:59:00Z",
   "inputs": {
     "sessionGapMinutes": 60,
     "windowDays": 4,
     "rollingDays": 14,
     "dailyCapHours": 10,
     "simulationSeed": 20261031,
-    "commits": 1,
-    "cycleCommits": 0,
-    "cycleIntervals": 0,
-    "activeDays": 1,
-    "sizeSamples": []
+    "commits": 33,
+    "cycleCommits": 33,
+    "cycleIntervals": 22,
+    "activeDays": 10,
+    "sizeSamples": [
+      5,
+      5,
+      6,
+      6,
+      7
+    ]
   },
-  "status": "insufficient",
-  "reason": "too_few_active_days",
-  "results": []
+  "status": "ok",
+  "pace": {
+    "hoursPerDay": 0.8291666666666666
+  },
+  "results": [
+    {
+      "id": "gp-021",
+      "remainingCycles": 6,
+      "p50Hours": 3.2333333333333334,
+      "p85Hours": 3.783333333333333,
+      "p95Hours": 4.083333333333333,
+      "p50Date": "2026-11-27",
+      "p85Date": "2026-11-30"
+    },
+    {
+      "id": "gp-072",
+      "remainingCycles": 6,
+      "p50Hours": 6.5,
+      "p85Hours": 7.233333333333333,
+      "p95Hours": 7.666666666666667,
+      "p50Date": "2026-12-03",
+      "p85Date": "2026-12-04"
+    },
+    {
+      "id": "gp-022",
+      "remainingCycles": 6,
+      "p50Hours": 9.716666666666667,
+      "p85Hours": 10.633333333333333,
+      "p95Hours": 11.166666666666666,
+      "p50Date": "2026-12-09",
+      "p85Date": "2026-12-10"
+    },
+    {
+      "id": "gp-004",
+      "remainingCycles": 6,
+      "p50Hours": 12.966666666666667,
+      "p85Hours": 14,
+      "p95Hours": 14.633333333333333,
+      "p50Date": "2026-12-15",
+      "p85Date": "2026-12-16"
+    },
+    {
+      "id": "gp-006",
+      "remainingCycles": 6,
+      "p50Hours": 16.216666666666665,
+      "p85Hours": 17.4,
+      "p95Hours": 18.033333333333335,
+      "p50Date": "2026-12-21",
+      "p85Date": "2026-12-22"
+    }
+  ]
 }

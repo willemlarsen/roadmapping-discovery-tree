@@ -7,6 +7,19 @@ Writes a forecast file, `pace.json`, beside a roadmap's `roadmap.json`.
 holds the roadmap it publishes, so a pace file written for any roadmap
 directory is picked up without a publish change.
 
+## The sample forecast
+
+The sample products' pace files (`roadmap/pace.json` and
+`products/seed-library/roadmap/pace.json`) are not computed from this repository's history,
+which is too short. `npm run sample-history [-- --end <YYYY-MM-DD>]`
+(`scripts/sample-history.mjs`) builds a synthetic history in a temporary directory, one per
+product: author `Sample Builder <sample@example.com>`, backdated cycle commits over the
+workdays ending on the end day (yesterday by default) that name the product's own cards, and
+made-up session tokens (`gov-5a…` for the garden planner, `gov-5b…` for the seed library). It
+runs this script with `--git` pointing at each history, dates the file the end day's last
+minute (`generatedAt` is `<end>T23:59:00Z`), and deletes the history. The same end day always
+gives the same files, and `test/sample-history.test.mjs` checks the committed ones against it.
+
 ## Flags
 
 | Flag | Meaning | Default |

@@ -1,0 +1,47 @@
+{
+  "contractVersion": 3,
+  "generator": "scripts/pace.mjs",
+  "generatedAt": "2026-11-23T23:59:00Z",
+  "inputs": {
+    "sessionGapMinutes": 60,
+    "windowDays": 4,
+    "rollingDays": 14,
+    "dailyCapHours": 10,
+    "simulationSeed": 20261031,
+    "commits": 32,
+    "cycleCommits": 32,
+    "cycleIntervals": 22,
+    "activeDays": 10,
+    "sizeSamples": [
+      5,
+      5,
+      6,
+      6,
+      7
+    ]
+  },
+  "status": "ok",
+  "pace": {
+    "hoursPerDay": 1.2541666666666667
+  },
+  "results": [
+    {
+      "id": "sl-002",
+      "remainingCycles": 6,
+      "p50Hours": 3.2333333333333334,
+      "p85Hours": 3.783333333333333,
+      "p95Hours": 4.133333333333334,
+      "p50Date": "2026-11-26",
+      "p85Date": "2026-11-27"
+    },
+    {
+      "id": "sl-003",
+      "remainingCycles": 6,
+      "p50Hours": 6.466666666666667,
+      "p85Hours": 7.233333333333333,
+      "p95Hours": 7.666666666666667,
+      "p50Date": "2026-12-01",
+      "p85Date": "2026-12-01"
+    }
+  ]
+}

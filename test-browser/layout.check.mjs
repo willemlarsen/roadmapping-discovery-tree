@@ -29,8 +29,8 @@ function serveRepo(overrides = new Map(), delays = new Map()) {
   return new Promise((resolve) => server.listen(0, "127.0.0.1", () => resolve(server)));
 }
 
-// The checked-in pace.json is generated from this repo's own git history, which is too short
-// for a forecast, and any real forecast goes stale three days after it is generated. Checks that
+// The checked-in pace.json comes from a synthetic history (scripts/sample-history.mjs) and, like
+// any forecast, goes stale three days after it is generated. Checks that
 // need forecast words serve the sample roadmap with a pace file made now, listing its cards.
 async function pacedOverrides() {
   const roadmap = JSON.parse(await readFile(join(ROOT, "roadmap/roadmap.json"), "utf8"));
@@ -309,11 +309,13 @@ function fixtureLog(roadmap, today) {
 async function fixtureOverrides() {
   const today = new Date().toISOString().slice(0, 10);
   const roadmap = fixtureRoadmap(today);
-  const emptyPace = JSON.parse(await readFile(join(ROOT, "roadmap/pace.json"), "utf8"));
+  // The fixture roadmap has no forecast: its pace file says there is not enough history.
+  const { pace: _forecast, ...samplePace } = JSON.parse(await readFile(join(ROOT, "roadmap/pace.json"), "utf8"));
+  const emptyPace = { ...samplePace, status: "insufficient", reason: "too_few_active_days", results: [] };
   const overrides = new Map([
     ["/roadmap/roadmap.json", JSON.stringify(roadmap)],
     ["/roadmap/decisions.jsonl", fixtureLog(roadmap, today)],
-    ["/roadmap/pace.json", JSON.stringify({ ...emptyPace, results: [] })],
+    ["/roadmap/pace.json", JSON.stringify(emptyPace)],
   ]);
   return overrides;
 }

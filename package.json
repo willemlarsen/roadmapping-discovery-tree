@@ -9,6 +9,7 @@
     "test:browser": "node --test test-browser/layout.check.mjs",
     "pace": "node scripts/pace.mjs",
     "backtest": "node scripts/backtest.mjs",
+    "sample-history": "node scripts/sample-history.mjs",
     "kit": "node scripts/build-kit.mjs"
   }
 }
