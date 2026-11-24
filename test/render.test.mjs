@@ -200,6 +200,15 @@ test("renderTree shows a card's state from view.shown, in its words and its data
   assert.deepEqual(items.map((item) => [item.children[0].attributes["data-status"], item.children[0].children[0].textContent]), [["next", "Next"], ["next", "Next"]]);
 });
 
+test("renderTree words a state shown from a card's parts without the details its own status would carry", () => {
+  const next = (id, order) => ({ id, problem: `Problem ${id}`, status: "next", order, children: [] });
+  const view = { shown: new Map([["up-001", "blocked"], ["up-002", "done"], ["up-003", "parked"]]) };
+
+  const items = renderTree({ goal: "Goal", children: [next("up-001", 1), next("up-002", 2), next("up-003", 3)] }, createFakeDocument(), view).children[1].children;
+
+  assert.deepEqual(items.map((item) => item.children[0].children[0].textContent), ["Waiting", "Solved ✓", "Parked"]);
+});
+
 test("renderTree stamps data-started on a card in view.started and on no other card", () => {
   const view = { started: new Map([["up-001", "1 of 2 parts solved"]]) };
 

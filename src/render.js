@@ -4,11 +4,13 @@ import { productHref, statusWords as portfolioStatusWords } from "./portfolio.js
 const STATUS_LINES = {
   now: () => "Solving now",
   next: () => "Next",
-  done: (node) => `Solved ✓ ${node.doneOn}`,
-  blocked: (node) => `Waiting on ${node.waitingOn}`,
+  done: (node) => (node.doneOn ? `Solved ✓ ${node.doneOn}` : "Solved ✓"),
+  blocked: (node) => (node.waitingOn ? `Waiting on ${node.waitingOn}` : "Waiting"),
   merged: () => "Merged, awaiting check",
+  parked: () => "Parked",
   paused: (node) => `Resumes after ${node.resumesAfterProblem}`,
 };
+
 export function renderTree(tree, document, view = {}) {
   const root = document.createElement("section");
   root.setAttribute("aria-label", "Roadmap");
