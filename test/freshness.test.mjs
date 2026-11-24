@@ -18,3 +18,13 @@ test("freshnessLine counts whole hours when the newest decision is less than a d
 test("freshnessLine counts whole minutes when the newest decision is less than an hour old", () => {
   assert.equal(freshnessLine([entryAt("2026-11-20T11:47:30Z")], NOW), "Roadmap last changed 12 minutes ago");
 });
+
+test("freshnessLine names one of a unit in the singular", () => {
+  const ages = ["2026-11-19T11:00:00Z", "2026-11-20T10:30:00Z", "2026-11-20T11:58:30Z"];
+
+  assert.deepEqual(ages.map((at) => freshnessLine([entryAt(at)], NOW)), [
+    "Roadmap last changed 1 day ago",
+    "Roadmap last changed 1 hour ago",
+    "Roadmap last changed 1 minute ago",
+  ]);
+});

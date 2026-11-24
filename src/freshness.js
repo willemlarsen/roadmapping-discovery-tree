@@ -3,9 +3,9 @@ const MILLISECONDS_PER_HOUR = 60 * MILLISECONDS_PER_MINUTE;
 
 // Largest first: the age is told in the largest unit it holds at least one of.
 const UNITS = [
-  { name: "days", milliseconds: 24 * MILLISECONDS_PER_HOUR },
-  { name: "hours", milliseconds: MILLISECONDS_PER_HOUR },
-  { name: "minutes", milliseconds: MILLISECONDS_PER_MINUTE },
+  { name: "day", milliseconds: 24 * MILLISECONDS_PER_HOUR },
+  { name: "hour", milliseconds: MILLISECONDS_PER_HOUR },
+  { name: "minute", milliseconds: MILLISECONDS_PER_MINUTE },
 ];
 
 export function freshnessLine(entries, now) {
@@ -15,5 +15,6 @@ export function freshnessLine(entries, now) {
 
 function agoWords(age) {
   const unit = UNITS.find((candidate) => age >= candidate.milliseconds);
-  return `${Math.floor(age / unit.milliseconds)} ${unit.name} ago`;
+  const count = Math.floor(age / unit.milliseconds);
+  return `${count} ${count === 1 ? unit.name : `${unit.name}s`} ago`;
 }
