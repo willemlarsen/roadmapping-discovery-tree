@@ -1,3 +1,5 @@
+import { sortSiblings } from "./tree.js";
+
 const KNOWN_STATUSES = new Set(["next", "now", "blocked", "paused", "merged", "done", "parked"]);
 const isText = (value) => typeof value === "string";
 const isNumber = (value) => typeof value === "number";
@@ -225,7 +227,54 @@ function problemLinkErrors(records, tree) {
     ...nextWithNowDescendantErrors(records, tree.parentOf),
     ...nextWithNowPartErrors(records),
     ...unknownResumesAfterErrors(records, tree.ids),
+    ...resumesAfterCycleErrors(records),
   ];
+}
+
+function resumesAfterCycleErrors(records) {
+  return detectResumesAfterCycle(records).map((id) => validationError(id, "resumes_after_cycle"));
+}
+
+// One id per resumesAfter loop among paused cards: the loop's first card in walk order.
+// A waiter waits on its target and on every waiting leaf under that target.
+export function detectResumesAfterCycle(records) {
+  const targetOf = new Map(records.filter(waitsOnAnotherCard).map((entry) => [entry.id, entry.resumesAfter]));
+  const parentOf = new Map(records.map((entry) => [entry.id, entry.parent]));
+  const parentIds = new Set(records.map((entry) => entry.parent));
+  const waitersAtOrUnder = (target) => [...targetOf.keys()].filter((id) =>
+    id === target || (!parentIds.has(id) && ancestorsAbove(id, parentOf).includes(target)));
+  const reachedFrom = new Map([...targetOf.keys()].map((id) =>
+    [id, reachableWaiters(id, (from) => waitersAtOrUnder(targetOf.get(from)))]));
+  const looped = walkIds(records).filter((id) => reachedFrom.get(id)?.has(id));
+  return looped.filter((id, index) => !looped.slice(0, index).some((earlier) => reachedFrom.get(earlier).has(id)));
+}
+
+// Self-reference is unknown_resumes_after, so it is not a waiting edge here.
+function waitsOnAnotherCard(entry) {
+  return entry.status === "paused" && isNonBlankText(entry.resumesAfter) && entry.resumesAfter !== entry.id;
+}
+
+function reachableWaiters(start, nextOf) {
+  const reached = new Set();
+  const pending = nextOf(start);
+  while (pending.length > 0) {
+    const id = pending.pop();
+    if (!reached.has(id)) {
+      reached.add(id);
+      pending.push(...nextOf(id));
+    }
+  }
+  return reached;
+}
+
+function walkIds(records) {
+  const seen = new Set();
+  const visit = (parent) => sortSiblings(records.filter((entry) => entry.parent === parent && !seen.has(entry.id)))
+    .flatMap((entry) => {
+      seen.add(entry.id);
+      return [entry.id, ...visit(entry.id)];
+    });
+  return visit(null);
 }
 
 function parkedParentErrors(records, parentIds) {

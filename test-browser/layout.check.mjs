@@ -164,7 +164,7 @@ const OPEN_FEATURE_CARD = `new Promise((resolve) => {
   measure();
 })`;
 
-test("an open rolled-up feature card, whichever it is, shows its total hours left, no Sequence line, and its Priority line after", async () => {
+test("an open rolled-up feature card, whichever it is, shows its total hours left, no Sequence line, and its rank line, Priority or Unranked, after", async () => {
   const server = await servePaced();
   const url = `http://127.0.0.1:${server.address().port}/strip/index.html`;
 
@@ -173,10 +173,10 @@ test("an open rolled-up feature card, whichever it is, shows its total hours lef
   assert.ok(card, "no open rolled-up feature card found");
   assert.ok(["now", "next"].includes(card.status), `the probed card is ${card.status}, not open`);
   const doneAt = card.lines.findIndex((line) => line.includes("left in total"));
-  const priorityAt = card.lines.findIndex((line) => line.startsWith("Priority"));
+  const rankAt = card.lines.findIndex((line) => line.startsWith("Priority") || line.startsWith("Unranked"));
   assert.ok(doneAt >= 0, `no visible "left in total" line in ${JSON.stringify(card.lines)}`);
   assert.equal(card.lines.some((line) => line.includes("Sequence")), false, "a rolled-up feature must not show a Sequence line");
-  assert.ok(priorityAt > doneAt, `the Priority line does not follow it in ${JSON.stringify(card.lines)}`);
+  assert.ok(rankAt > doneAt, `the rank line does not follow it in ${JSON.stringify(card.lines)}`);
 });
 
 // The sample roadmap's started next feature: one of its two parts is solved.
