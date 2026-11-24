@@ -5,7 +5,8 @@ export function staleness(roadmap, now, lastRerank) {
   const newest = newestChange(roadmap, lastRerank);
   if (newest === null) return { days: null, stale: false };
   const days = utcDay(Date.parse(now)) - utcDay(newest);
-  return { days, stale: days > roadmap.staleAfterDays };
+  const reminderOn = roadmap.staleAfterDays !== null;
+  return { days, stale: reminderOn && days > roadmap.staleAfterDays };
 }
 
 function newestChange(roadmap, lastRerank) {

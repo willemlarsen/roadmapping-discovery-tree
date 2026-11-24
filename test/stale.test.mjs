@@ -42,3 +42,11 @@ test("staleness takes the last re-rank as an argument, and with a null re-rank c
 
   assert.deepEqual(results, cases.map(({ expected }) => expected));
 });
+
+test("staleness is never stale when staleAfterDays is null, the re-rank reminder switched off, and still counts the days", () => {
+  const reminderOff = { staleAfterDays: null, problems: [{ status: "now", statusSince: "2026-01-01" }] };
+
+  const result = staleness(reminderOff, NOW, null);
+
+  assert.deepEqual(result, { days: 304, stale: false });
+});
