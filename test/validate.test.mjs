@@ -187,6 +187,14 @@ test("roadmap limits that are not positive whole numbers fail with out_of_range"
     ({ problemId: null, reason: "out_of_range", field })) }));
 });
 
+test("a roadmap that sets staleAfterDays to null, switching the re-rank reminder off, validates", () => {
+  const roadmap = { ...wellFormedRoadmap, staleAfterDays: null };
+
+  const result = validateRoadmap(roadmap);
+
+  assert.deepEqual(result, { valid: true, errors: [] });
+});
+
 test("a slices list holding anything but non-blank text fails with wrong_type", () => {
   const roadmaps = [[5], [null], ["skin-roadmap-bar", "   "]].map((slices) => roadmapWith(firstProblem, secondProblemWith({ slices })));
 

@@ -22,6 +22,8 @@ const STATUS_DETAIL_FIELDS = ["waitingOn", "resumesAfter", "confirmedBy", "doneO
 const ROADMAP_SCHEMA = {
   kinds: { goal: isText, wipLimit: isNumber, staleAfterDays: isNumber },
   ranges: { wipLimit: isPositiveInteger, staleAfterDays: isPositiveInteger },
+  // null here is a setting, not a blank: `staleAfterDays: null` switches the re-rank reminder off.
+  nullable: new Set(["staleAfterDays"]),
 };
 const KNOWN_ROADMAP_KEYS = new Set(["version", "goal", "wipLimit", "staleAfterDays", "problems"]);
 const KNOWN_PROBLEM_KEYS = new Set([
@@ -34,12 +36,12 @@ const LEAF_FIELDS_SPEC = fieldsSpec(PROBLEM_FIELDS, PROBLEM_SCHEMA, isBlank);
 const PARENT_FIELDS_SPEC = fieldsSpec(PROBLEM_FIELDS, PROBLEM_SCHEMA, isBlankText);
 const ROADMAP_FIELDS_SPEC = fieldsSpec(ROADMAP_FIELDS, ROADMAP_SCHEMA, isBlankText);
 
-function fieldsSpec(fields, { kinds, ranges }, isEmpty) {
+function fieldsSpec(fields, { kinds, ranges, nullable = new Set() }, isEmpty) {
   return {
     fields,
     rules: [
       { reason: "missing_field", breaks: (value) => value === undefined },
-      { reason: "empty_field", breaks: isEmpty },
+      { reason: "empty_field", breaks: (value, field) => !(value === null && nullable.has(field)) && isEmpty(value) },
       { reason: "wrong_type", breaks: (value, field) => isPresent(value) && field in kinds && !kinds[field](value) },
       { reason: "out_of_range", breaks: (value, field) => field in ranges && kinds[field](value) && !ranges[field](value) },
     ],
