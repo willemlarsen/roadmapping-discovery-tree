@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -123,6 +123,37 @@ test("a refused step stops the replay with exit 1 and its reason, and writes not
     "Step 1 of 3: Reminders (gp-022) moves from next to now",
     "Step 2 of 3 not written: replay step refused: roadmap: gp-021 missing_field",
   ]);
+  rmSync(dirname(copyDir), { recursive: true, force: true });
+});
+
+test("replay refuses to replace a directory it did not make, and leaves it as it was", async () => {
+  const copyDir = mkdtempSync(join(tmpdir(), "not-a-replay-"));
+  writeFileSync(join(copyDir, "keep.txt"), "mine");
+  const said = [];
+
+  const result = await replay({
+    repoRoot, copyDir, steps: GARDEN_STEPS, waitMs: 0, pauseMs: 0,
+    sleep: async () => {}, now: () => new Date("2026-11-24T17:00:00Z"), log: (line) => said.push(line),
+  });
+
+  assert.equal(result.exitCode, 1);
+  assert.deepEqual(readdirSync(copyDir), ["keep.txt"]);
+  assert.deepEqual(said, ["Replay not started: the copy directory already holds something that is not a replay copy"]);
+  rmSync(copyDir, { recursive: true, force: true });
+});
+
+test("a second replay into the same copy starts again from the committed sample", async () => {
+  const copyDir = join(mkdtempSync(join(tmpdir(), "replay-")), "site");
+  const run = () => replay({
+    repoRoot, copyDir, steps: GARDEN_STEPS.slice(0, 1), waitMs: 0, pauseMs: 0,
+    sleep: async () => {}, now: () => new Date("2026-11-24T17:00:00Z"), log: () => {},
+  });
+
+  await run();
+  const second = await run();
+
+  assert.equal(second.exitCode, 0);
+  assert.equal(readLog(copyDir).length, readLog(repoRoot).length + 1);
   rmSync(dirname(copyDir), { recursive: true, force: true });
 });
 

@@ -1,6 +1,6 @@
 // Replays a short, made-up sequence of roadmap changes against a COPY of the sample, so a page
 // served from that copy redraws as each change lands. The committed sample files are never touched.
-import { appendFileSync, cpSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { appendFileSync, cpSync, existsSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { validateDecisionLog } from "../src/decisions.js";
 import { validateRoadmap } from "../src/validate.js";
@@ -10,9 +10,16 @@ import { defaultEnd, regenerate } from "./sample-history.mjs";
 const SITE_PARTS = ["strip", "src", "portfolio", "roadmap", "products"];
 const ROADMAP_DIR = "roadmap";
 
+// The copy is wiped and remade on every replay, so it carries a marker: a directory without one
+// (holding anything at all) is never removed.
+const MARKER = ".replay-copy";
+
+const isReplaceable = (copyDir) => !existsSync(copyDir) || readdirSync(copyDir).length === 0 || existsSync(join(copyDir, MARKER));
+
 function copySite(repoRoot, copyDir) {
   rmSync(copyDir, { recursive: true, force: true });
   SITE_PARTS.forEach((part) => cpSync(join(repoRoot, part), join(copyDir, part), { recursive: true }));
+  writeFileSync(join(copyDir, MARKER), "Made by scripts/replay.mjs; removed and remade on every replay.\n");
 }
 
 function readState(copyDir) {
@@ -38,6 +45,10 @@ function refreshPace(copyDir, now) {
 }
 
 export async function replay({ repoRoot, copyDir, steps, waitMs, pauseMs, sleep, now, log }) {
+  if (!isReplaceable(copyDir)) {
+    log("Replay not started: the copy directory already holds something that is not a replay copy");
+    return { exitCode: 1 };
+  }
   copySite(repoRoot, copyDir);
   refreshPace(copyDir, now());
   for (const [index, step] of steps.entries()) {
