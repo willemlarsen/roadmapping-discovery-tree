@@ -5,7 +5,7 @@ import { deriveRoadmapReference } from "./support/roadmap-reference.mjs";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 const REFRESH =
-  "The skins look changed. Refresh the clickchain.ai share page reference " +
+  "The page look changed. Refresh the clickchain.ai share page reference " +
   "(__tests__/share/fixtures/roadmap-reference.json) to match, then update " +
   "test/fixtures/share-site/roadmap-reference.json here.";
 

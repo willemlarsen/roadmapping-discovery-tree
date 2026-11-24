@@ -7,14 +7,14 @@ const logLine = (...fields) => fields.join(SEPARATOR);
 
 test("well-formed log lines become commits carrying the author's own calendar day", () => {
   const text = [
-    logLine("2efa1c3", "2026-10-30T09:15:00-07:00", "F4: hoursPerDay averages (gov-e7fffe21f4b8)"),
+    logLine("2efa1c3", "2026-10-30T09:15:00-07:00", "F4: hoursPerDay averages (gov-5c0000000005)"),
     logLine("2f7e867", "2026-10-31T00:30:00+09:00", "F5: insufficient history"),
   ].join("\n") + "\n";
 
   const commits = parseLog(text);
 
   assert.deepEqual(commits, [
-    { hash: "2efa1c3", at: Date.parse("2026-10-30T16:15:00Z"), day: "2026-10-30", offsetMinutes: -420, subject: "F4: hoursPerDay averages (gov-e7fffe21f4b8)" },
+    { hash: "2efa1c3", at: Date.parse("2026-10-30T16:15:00Z"), day: "2026-10-30", offsetMinutes: -420, subject: "F4: hoursPerDay averages (gov-5c0000000005)" },
     { hash: "2f7e867", at: Date.parse("2026-10-30T15:30:00Z"), day: "2026-10-31", offsetMinutes: 540, subject: "F5: insufficient history" },
   ]);
 });

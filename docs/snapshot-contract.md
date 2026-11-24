@@ -1,6 +1,6 @@
 # Snapshot contract
 
-The interface between a product repo and the share site is the published snapshot, not the skins repo. The roadmap kit builds the snapshot, the site validates it, and this page is the contract between them. The site is the authority on what it accepts. This contract describes roadmap kit 0.1.1.
+The interface between a product repo and the share site is the published snapshot, not the repository that builds the kit. The roadmap kit builds the snapshot, the site validates it, and this page is the contract between them. The site is the authority on what it accepts. This contract describes roadmap kit 0.1.1.
 
 ## Snapshot (schemaVersion 1)
 
@@ -61,9 +61,9 @@ Every kit command run exits with one of three codes, so a workflow step can tell
 
 ## Using the kit in a product repo
 
-A product repo keeps its roadmap under `roadmaps/<product id>/` and runs the kit from its own CI. Nothing in the product repo calls the skins repo.
+A product repo keeps its roadmap under `roadmaps/<product id>/` and runs the kit from its own CI. Nothing in the product repo calls the kit's source repository.
 
-1. In skins, run `npm run kit`. It builds `dist/roadmap-kit/` and prints the kit hash.
+1. In this repository, run `npm run kit`. It builds `dist/roadmap-kit/` and prints the kit hash.
 2. Copy `dist/roadmap-kit/` to `tools/roadmap-kit/` in the product repo, and copy `kit/roadmap.yml` to `.github/workflows/roadmap.yml`. Commit both in one pull request.
 3. Set the settings below: `node kit/repo-settings.mjs apply <owner/repo>` creates the environments (see Permission scopes), and the operator sets the values. To upgrade later, repeat steps 1 and 2: remove `dist/roadmap-kit/` before `npm run kit` (the build refuses to write over an existing kit), then copy the whole folder, replacing `tools/roadmap-kit/` so no file from the old kit is left behind, and copy `kit/roadmap.yml` again. Change `ROADMAP_KIT_SHA256` in the same pull request.
 
@@ -86,7 +86,7 @@ Output streams: publish prints only its result line on stdout (the line from the
 
 ## Permission scopes
 
-`kit/repo-settings.mjs` in skins declares a product repo's publish settings in one versioned file: the environments, their default-branch rule, and the names of the secret and variables above.
+`kit/repo-settings.mjs` declares a product repo's publish settings in one versioned file: the environments, their default-branch rule, and the names of the secret and variables above.
 
 - `node kit/repo-settings.mjs apply <owner/repo>` needs repo admin, so only an operator runs it, never CI. It creates the `staging` and `production` environments, each limited to the repo's default branch, and sets no secret or variable value. It deletes every branch policy it does not declare, so `check` after `apply` is clean. It refuses an environment with protection rules it does not declare (required reviewers, a wait timer, or any other rule), printing `repo-settings: refused to change <environment>: ...`, and an environment that does not let admins bypass its protection rules, printing `repo-settings: refused to change <environment>: it does not let admins bypass its protection rules`, and then changes no environment. It matches environment names whatever their case, so a live `Staging` is checked as `staging`. It refuses a branch policy id gh returns that is not a positive integer, printing `repo-settings: refused a value gh returned`, before it deletes any policy. For an environment already on custom branch policies, that id check runs before any write. For an environment not yet on custom branch policies, apply's own PUT happens before the id check, because apply reads its policies only after switching it to custom branch policies: a refusal then leaves that environment on custom branch policies, and any environment applied before it stays applied. It retries a gh read or the environment PUT that fails with HTTP 429, a 5xx or a network error (HTTP 500, 502, 503 or 504; a timeout, a connection reset or refused, or a host it could not resolve) up to 4 attempts in all, waiting 1, 2 and 4 seconds and printing only `repo-settings: retrying gh (attempt <n> of 4)`, and fails at once on any other error. A POST or DELETE is never retried: a rerun converges instead, because a stopped run is safe to rerun: apply converges.
 - `node kit/repo-settings.mjs check <owner/repo>` needs read-only access, so an operator or CI with a read token can run it. It reads names, branch rules and presence only, never values, and exits 1 with one line per difference, including a branch policy `apply` did not declare.

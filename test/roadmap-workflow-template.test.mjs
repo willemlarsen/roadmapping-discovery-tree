@@ -10,7 +10,7 @@ import { buildKit } from "../scripts/build-kit.mjs";
 
 const REPO_ROOT = fileURLToPath(new URL("..", import.meta.url));
 const TEMPLATE = join(REPO_ROOT, "kit", "roadmap.yml");
-const SKINS_CI = join(REPO_ROOT, ".github", "workflows", "test.yml");
+const REPO_CI = join(REPO_ROOT, ".github", "workflows", "test.yml");
 const KIT_DIR = join("tools", "roadmap-kit");
 const STEP_START = /^ {6}- /;
 const KIT_CODE_RUN = /node\s+\S*tools\/roadmap-kit\//;
@@ -90,7 +90,7 @@ function runCheck(script, cwd, expectedHash) {
 
 test("the roadmap workflow template checks out, pins node and fails on a kit hash mismatch before any step runs kit code", async () => {
   const template = await readFile(TEMPLATE, "utf8");
-  const skinsCi = await readFile(SKINS_CI, "utf8");
+  const repoCi = await readFile(REPO_CI, "utf8");
   const steps = stepsOf(jobBlockOf(template, "validate"));
   const hashStep = steps.find((step) => labelOf(step) === "kit-hash") ?? "";
   const goodRoot = await mkdtemp(join(tmpdir(), "kit-template-good-"));
@@ -113,7 +113,7 @@ test("the roadmap workflow template checks out, pins node and fails on a kit has
     assert.deepEqual(steps.map(labelOf), ["checkout", "setup-node", "kit-hash", "validate", "pace"]);
     assert.match(steps[0], /persist-credentials: false/);
     assert.match(steps[0], /fetch-depth: 0/);
-    assert.equal(usesLine(template, "actions/setup-node"), usesLine(skinsCi, "actions/setup-node"));
+    assert.equal(usesLine(template, "actions/setup-node"), usesLine(repoCi, "actions/setup-node"));
     const nodeVersion = steps[1].match(/node-version: "?(\d+\.\d+\.\d+)"?\s*$/m)?.[1] ?? "unpinned";
     assert.ok(nodeVersionAtLeast(nodeVersion, [24, 2]), `node-version ${nodeVersion} must be an exact version >= 24.2`);
     const hashIndex = steps.indexOf(hashStep);
