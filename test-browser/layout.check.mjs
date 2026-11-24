@@ -266,7 +266,7 @@ test("a started label's hidden part count reaches Chrome's accessibility tree as
 
   const exposed = await chromeLabelText(url).finally(() => server.close());
 
-  assert.deepEqual(exposed, ["PAUSED", ", 1 of 2 parts solved"]);
+  assert.deepEqual(exposed, ["PAUSED", ", 1 of 2 parts solved", "⏸"]);
 });
 
 test("serveRepo serves an override body for its path instead of the repo file", async () => {
