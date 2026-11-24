@@ -15,8 +15,19 @@ export function renderTree(tree, document, view = {}) {
   const root = document.createElement("section");
   root.setAttribute("aria-label", "Roadmap");
   root.appendChild(textElement(document, "h1", tree.goal));
-  root.appendChild(renderList(tree.children, document, view));
+  root.appendChild(cardTreeScroller(document, renderList(tree.children, document, view)));
   return root;
+}
+
+// The only part of the page that scrolls sideways: a tree wider than the window scrolls inside
+// it, so the heading and everything above stay put. Tab reaches it; the arrow keys scroll it.
+function cardTreeScroller(document, list) {
+  const scroller = document.createElement("div");
+  scroller.setAttribute("role", "region");
+  scroller.setAttribute("aria-label", "Card tree");
+  scroller.setAttribute("tabindex", "0");
+  scroller.appendChild(list);
+  return scroller;
 }
 
 export function renderPortfolio(document, results) {

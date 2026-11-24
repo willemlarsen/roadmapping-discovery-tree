@@ -30,6 +30,7 @@ const nestedTree = {
 };
 
 const render = (tree) => renderTree(tree, createFakeDocument());
+const topList = (root) => root.children[1].children[0];
 const cardTexts = (item) => item.children[0].children.map((part) => part.textContent);
 const forecastTexts = (item) => item.children[0].children.slice(2).flatMap((group) => group.children.map((line) => line.textContent));
 
@@ -57,6 +58,15 @@ test("renderTree returns a section labelled Roadmap", () => {
   assert.deepEqual([root.tagName, root.attributes["aria-label"]], ["SECTION", "Roadmap"]);
 });
 
+test("renderTree puts the card list in its own region named Card tree, after the goal, that Tab can reach", () => {
+  const [heading, scroller] = render(nestedTree).children;
+
+  assert.deepEqual(
+    [heading.tagName, scroller.tagName, scroller.attributes, scroller.children.map((child) => child.tagName)],
+    ["H1", "DIV", { role: "region", "aria-label": "Card tree", tabindex: "0" }, ["UL"]],
+  );
+});
+
 test("renderTree shows the goal as the heading", () => {
   const [heading] = render(nestedTree).children;
 
@@ -64,25 +74,25 @@ test("renderTree shows the goal as the heading", () => {
 });
 
 test("renderTree lists top-level problems as items of a list", () => {
-  const topList = render(nestedTree).children[1];
+  const list = topList(render(nestedTree));
 
-  assert.deepEqual([topList.tagName, ...topList.children.map((item) => item.tagName)], ["UL", "LI", "LI"]);
+  assert.deepEqual([list.tagName, ...list.children.map((item) => item.tagName)], ["UL", "LI", "LI"]);
 });
 
 test("renderTree nests child problems in a list inside their parent's item", () => {
-  const nestedList = render(nestedTree).children[1].children[0].children[1];
+  const nestedList = topList(render(nestedTree)).children[0].children[1];
 
   assert.deepEqual(cardTexts(nestedList.children[0]), ["Next", "Agree how it looks"]);
 });
 
 test("renderTree gives a leaf card no empty nested list", () => {
-  const leafItem = render(nestedTree).children[1].children[1];
+  const leafItem = topList(render(nestedTree)).children[1];
 
   assert.equal(leafItem.children.length, 1);
 });
 
 test("renderTree writes the status in words on a card", () => {
-  const firstItem = render(nestedTree).children[1].children[0];
+  const firstItem = topList(render(nestedTree)).children[0];
 
   assert.deepEqual(cardTexts(firstItem), ["Solving now", "See where we are"]);
 });
@@ -93,10 +103,10 @@ test("siblings appear in DOM order by ascending data-order", () => {
     problems: [3, 1, 2].map((order) => ({ id: `up-00${order}`, parent: null, order, problem: `Problem ${order}`, status: "next" })),
   };
 
-  const topList = renderTree(buildTree(roadmap), createFakeDocument()).children[1];
+  const list = topList(renderTree(buildTree(roadmap), createFakeDocument()));
 
   assert.deepEqual(
-    topList.children.map((item) => [item.attributes["data-order"], cardTexts(item)[1]]),
+    list.children.map((item) => [item.attributes["data-order"], cardTexts(item)[1]]),
     [["1", "Problem 1"], ["2", "Problem 2"], ["3", "Problem 3"]],
   );
 });
@@ -113,9 +123,7 @@ test("renderTree gives each now and next card its own likely-done range and a do
   };
   const forecast = { state: "ok", pace: validPace() };
 
-  const topList = renderTree(tree, createFakeDocument(), { forecast }).children[1];
-
-  const [nowItem, nextItem] = topList.children;
+  const [nowItem, nextItem] = topList(renderTree(tree, createFakeDocument(), { forecast })).children;
   const doneItem = nowItem.children[1].children[0];
   assert.deepEqual([nowItem, nextItem, doneItem].map(forecastTexts),
     [["Sequence 1 of 2 \u00b7 the order the work follows", "About 2 working hours left (85% likely)"], ["Sequence 2 of 2 \u00b7 the order the work follows", "About 3 working hours left (85% likely)"], []]);
@@ -133,9 +141,9 @@ test("renderTree labels each range an estimate with the card's remaining-cycle a
     ],
   };
 
-  const topList = renderTree(tree, createFakeDocument(), { forecast: { state: "ok", pace } }).children[1];
+  const list = topList(renderTree(tree, createFakeDocument(), { forecast: { state: "ok", pace } }));
 
-  assert.deepEqual(topList.children.map((item) => forecastTexts(item)[2]), [
+  assert.deepEqual(list.children.map((item) => forecastTexts(item)[2]), [
     estimateFor(7),
     estimateFor(12),
   ]);
@@ -152,9 +160,9 @@ test("renderTree marks each forecast card unranked until value and size exist", 
 
   const cardLines = new Map([["up-001", UNRANKED], ["up-002", UNRANKED]]);
 
-  const topList = renderTree(tree, createFakeDocument(), { forecast: { state: "ok", pace: validPace() }, cardLines }).children[1];
+  const list = topList(renderTree(tree, createFakeDocument(), { forecast: { state: "ok", pace: validPace() }, cardLines }));
 
-  assert.deepEqual(topList.children.map((item) => item.children[0].children.filter((part) => part.tagName === "P").map((line) => line.textContent)),
+  assert.deepEqual(list.children.map((item) => item.children[0].children.filter((part) => part.tagName === "P").map((line) => line.textContent)),
     [[UNRANKED], [UNRANKED]]);
 });
 
@@ -167,7 +175,7 @@ test("renderTree puts a card's forecast in one labelled group after its status a
 
   const roots = forecasts.map((forecast) => renderTree(tree, createFakeDocument(), { forecast, cardLines: new Map([["up-001", UNRANKED]]) }));
 
-  const cards = roots.map((root) => root.children[1].children[0].children[0]);
+  const cards = roots.map((root) => topList(root).children[0].children[0]);
   assert.deepEqual(cards.map((card) => card.children.map((part) => part.tagName)), [["SPAN", "SPAN", "DIV", "P"], ["SPAN", "SPAN", "DIV", "P"]]);
   assert.deepEqual(cards.map((card) => [card.children[2].attributes.role, card.children[2].attributes["aria-label"]]),
     [["group", "Forecast"], ["group", "Forecast"]]);
@@ -181,13 +189,13 @@ test("renderTree puts a card's forecast in one labelled group after its status a
 test("renderTree gives a done card Solved, a check mark and its done date", () => {
   const done = { id: "up-011", problem: "Know the real problem", status: "done", order: 1, doneOn: "2026-10-27", children: [] };
 
-  const item = render({ goal: "Goal", children: [done] }).children[1].children[0];
+  const item = topList(render({ goal: "Goal", children: [done] })).children[0];
 
   assert.deepEqual(cardTexts(item), ["Solved ✓ 2026-10-27", "Know the real problem"]);
 });
 
 test("renderTree puts each card's status in a data-status attribute for styling", () => {
-  const items = render(nestedTree).children[1].children;
+  const items = topList(render(nestedTree)).children;
 
   assert.deepEqual(items.map((item) => item.children[0].attributes["data-status"]), ["now", "next"]);
 });
@@ -195,7 +203,7 @@ test("renderTree puts each card's status in a data-status attribute for styling"
 test("renderTree shows a card's state from view.shown, in its words and its data-status, over its own status", () => {
   const view = { shown: new Map([["up-001", "next"], ["up-003", "next"], ["up-002", "next"]]) };
 
-  const items = renderTree(nestedTree, createFakeDocument(), view).children[1].children;
+  const items = topList(renderTree(nestedTree, createFakeDocument(), view)).children;
 
   assert.deepEqual(items.map((item) => [item.children[0].attributes["data-status"], item.children[0].children[0].textContent]), [["next", "Next"], ["next", "Next"]]);
 });
@@ -204,7 +212,7 @@ test("renderTree words a state shown from a card's parts without the details its
   const next = (id, order) => ({ id, problem: `Problem ${id}`, status: "next", order, children: [] });
   const view = { shown: new Map([["up-001", "blocked"], ["up-002", "done"], ["up-003", "parked"]]) };
 
-  const items = renderTree({ goal: "Goal", children: [next("up-001", 1), next("up-002", 2), next("up-003", 3)] }, createFakeDocument(), view).children[1].children;
+  const items = topList(renderTree({ goal: "Goal", children: [next("up-001", 1), next("up-002", 2), next("up-003", 3)] }, createFakeDocument(), view)).children;
 
   assert.deepEqual(items.map((item) => item.children[0].children[0].textContent), ["Waiting", "Solved ✓", "Parked"]);
 });
@@ -213,7 +221,7 @@ test("renderTree words a card shown paused from its parts Paused, with the pause
   const next = { id: "up-001", problem: "Problem up-001", status: "next", order: 1, children: [] };
   const view = { shown: new Map([["up-001", "paused"]]) };
 
-  const item = renderTree({ goal: "Goal", children: [next] }, createFakeDocument(), view).children[1].children[0];
+  const item = topList(renderTree({ goal: "Goal", children: [next] }, createFakeDocument(), view)).children[0];
 
   const label = item.children[0].children[0];
   assert.deepEqual([label.textContent, label.children.map((mark) => mark.attributes["aria-label"])], ["Paused⏸", ["Paused"]]);
@@ -223,7 +231,7 @@ test("renderTree labels a started card with its shown state and the part count i
   const next = (id, order) => ({ id, problem: `Problem ${id}`, status: "next", order, children: [] });
   const view = { started: new Map([["up-001", "1 of 2 parts solved"]]), shown: new Map([["up-001", "paused"]]) };
 
-  const items = renderTree({ goal: "Goal", children: [next("up-001", 1), next("up-002", 2)] }, createFakeDocument(), view).children[1].children;
+  const items = topList(renderTree({ goal: "Goal", children: [next("up-001", 1), next("up-002", 2)] }, createFakeDocument(), view)).children;
 
   const labels = items.map((item) => item.children[0].children[0]);
   assert.deepEqual(labels.map((label) => label.textContent), ["Paused, 1 of 2 parts solved⏸", "Next"]);
@@ -233,7 +241,7 @@ test("renderTree labels a started card with its shown state and the part count i
 test("renderTree gives a blocked card the words waiting on and what it waits on", () => {
   const blocked = { id: "up-020", problem: "Ship the preview", status: "blocked", order: 1, waitingOn: "a Pages account", children: [] };
 
-  const item = render({ goal: "Goal", children: [blocked] }).children[1].children[0];
+  const item = topList(render({ goal: "Goal", children: [blocked] })).children[0];
 
   assert.deepEqual(cardTexts(item), ["Waiting on a Pages account", "Ship the preview"]);
 });
@@ -245,7 +253,7 @@ test("renderTree gives a paused card the words resumes after and the text of the
     entry({ id: "up-031", problem: "Polish the page", status: "paused", order: 2, resumesAfter: "up-030" }),
   ] };
 
-  const items = render(buildTree(roadmap)).children[1].children;
+  const items = topList(render(buildTree(roadmap))).children;
 
   assert.deepEqual(cardTexts(items[1]), ["Resumes after Fix the build⏸", "Polish the page"]);
 });
@@ -257,7 +265,7 @@ test("renderTree gives a paused card's label a pause mark named Paused, and a ne
     entry({ id: "up-031", problem: "Polish the page", status: "paused", order: 2, resumesAfter: "up-030" }),
   ] };
 
-  const [next, paused] = render(buildTree(roadmap)).children[1].children;
+  const [next, paused] = topList(render(buildTree(roadmap))).children;
 
   const labelMarks = [next, paused].map((item) => item.children[0].children[0].children.map((mark) => [mark.textContent, mark.attributes.role, mark.attributes["aria-label"]]));
   assert.deepEqual(labelMarks, [[], [["⏸", "img", "Paused"]]]);
@@ -266,7 +274,7 @@ test("renderTree gives a paused card's label a pause mark named Paused, and a ne
 test("renderTree gives a merged card the words merged, awaiting check", () => {
   const merged = { id: "up-040", problem: "Check the preview", status: "merged", order: 1, children: [] };
 
-  const item = render({ goal: "Goal", children: [merged] }).children[1].children[0];
+  const item = topList(render({ goal: "Goal", children: [merged] })).children[0];
 
   assert.deepEqual(cardTexts(item), ["Merged, awaiting check", "Check the preview"]);
 });
@@ -275,7 +283,7 @@ test("renderTree warns on a done card that still has an open part, and on no oth
   const done = { id: "up-050", problem: "Whole thing", status: "done", order: 1, doneOn: "2026-10-27", children: [], doneWithOpenChild: true };
   const closed = { id: "up-051", problem: "Finished thing", status: "done", order: 2, doneOn: "2026-10-28", children: [], doneWithOpenChild: false };
 
-  const [flagged, clean] = render({ goal: "Goal", children: [done, closed] }).children[1].children;
+  const [flagged, clean] = topList(render({ goal: "Goal", children: [done, closed] })).children;
 
   assert.deepEqual([cardTexts(flagged), cardTexts(clean)], [
     ["Solved ✓ 2026-10-27", "Whole thing", "Marked solved, but a part is not solved yet"],
