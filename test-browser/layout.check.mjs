@@ -179,7 +179,7 @@ test("an open rolled-up feature card, whichever it is, shows its total hours lef
   assert.ok(rankAt > doneAt, `the rank line does not follow it in ${JSON.stringify(card.lines)}`);
 });
 
-// The sample roadmap's started next feature: one of its two parts is solved.
+// The sample roadmap's started feature: one of its two parts is solved, so it shows paused.
 const STARTED_CARD = "Welcome new members to the garden";
 
 const CARD_WORDS = `new Promise((resolve) => {
@@ -190,7 +190,7 @@ const CARD_WORDS = `new Promise((resolve) => {
     const started = cards.find((card) => card.textContent.includes(${JSON.stringify(STARTED_CARD)}));
     resolve({
       startedStatus: started?.getAttribute("data-status") ?? null,
-      startedHasLabel: started ? started.firstElementChild.firstChild.textContent === "Started" && started.firstElementChild.textContent.endsWith(", 1 of 2 parts solved") && started.firstElementChild.querySelector("[data-visually-hidden]").getBoundingClientRect().width <= 1 && getComputedStyle(started.firstElementChild.querySelector("[data-visually-hidden]")).overflow === "hidden" : false,
+      startedHasLabel: started ? started.firstElementChild.firstChild.textContent === "Paused" && started.firstElementChild.textContent.includes(", 1 of 2 parts solved") && started.firstElementChild.querySelector("[data-visually-hidden]").getBoundingClientRect().width <= 1 && getComputedStyle(started.firstElementChild.querySelector("[data-visually-hidden]")).overflow === "hidden" : false,
       forecasts: cards.filter((card) => ["now", "next"].includes(card.getAttribute("data-status"))).map((card) => card.textContent.includes("working hour")),
       dated: cards.filter((card) => /\\d{4}-\\d{2}-\\d{2}/.test(card.textContent.replace(/Solved[^.]*/g, ""))).map((card) => card.textContent.slice(0, 60)),
     });
@@ -198,15 +198,15 @@ const CARD_WORDS = `new Promise((resolve) => {
   measure();
 })`;
 
-test("a started feature card's label reads Started with the part count as hidden text, and cards show working hours and no dates", async () => {
+test("a started feature card shows paused, its label reads Paused with the part count as hidden text, and cards show working hours and no dates", async () => {
   const server = await servePaced();
   const url = `http://127.0.0.1:${server.address().port}/strip/index.html`;
 
   const words = await inPage(CARD_WORDS, url).finally(() => server.close());
 
   assert.ok(words, "no card on the page");
-  assert.equal(words.startedStatus, "next");
-  assert.ok(words.startedHasLabel, "the started card does not read Started with its part count hidden");
+  assert.equal(words.startedStatus, "paused");
+  assert.ok(words.startedHasLabel, "the started card does not read Paused with its part count hidden");
   assert.deepEqual(words.forecasts.filter((hasHours) => !hasHours), []);
   assert.deepEqual(words.dated, []);
 });
@@ -214,24 +214,24 @@ test("a started feature card's label reads Started with the part count as hidden
 const BORDER_STYLES = `new Promise((resolve) => {
   const giveUpAt = Date.now() + 5000;
   const measure = () => {
-    const next = [...document.querySelectorAll('section[aria-label="Roadmap"] li > div[data-status="next"]')];
-    if (next.length === 0) return Date.now() < giveUpAt ? setTimeout(measure, 50) : resolve(null);
+    const cards = [...document.querySelectorAll('section[aria-label="Roadmap"] li > div')];
+    if (cards.length === 0) return Date.now() < giveUpAt ? setTimeout(measure, 50) : resolve(null);
     const styleOf = (card) => (card ? getComputedStyle(card).borderTopStyle : null);
     resolve({
-      started: styleOf(next.find((card) => card.hasAttribute("data-started"))),
-      plain: styleOf(next.find((card) => !card.hasAttribute("data-started"))),
+      started: styleOf(cards.find((card) => card.textContent.includes(${JSON.stringify(STARTED_CARD)}))),
+      plain: styleOf(cards.find((card) => card.getAttribute("data-status") === "next")),
     });
   };
   measure();
 })`;
 
-test("a started next card draws a solid border and a plain next card a dashed one, as computed in the browser", async () => {
+test("a started feature card draws the paused dotted border and a plain next card a dashed one, as computed in the browser", async () => {
   const server = await servePaced();
   const url = `http://127.0.0.1:${server.address().port}/strip/index.html`;
 
   const styles = await inPage(BORDER_STYLES, url).finally(() => server.close());
 
-  assert.deepEqual(styles, { started: "solid", plain: "dashed" });
+  assert.deepEqual(styles, { started: "dotted", plain: "dashed" });
 });
 
 const STARTED_LABEL = `new Promise((resolve) => {
@@ -266,7 +266,7 @@ test("a started label's hidden part count reaches Chrome's accessibility tree as
 
   const exposed = await chromeLabelText(url).finally(() => server.close());
 
-  assert.deepEqual(exposed, ["STARTED", ", 1 of 2 parts solved"]);
+  assert.deepEqual(exposed, ["PAUSED", ", 1 of 2 parts solved"]);
 });
 
 test("serveRepo serves an override body for its path instead of the repo file", async () => {

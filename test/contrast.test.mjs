@@ -269,15 +269,6 @@ test("the card's rank line gets the ink colour, which meets 4.5:1 on the card, a
   assert.deepEqual({ token, failing, fitsCardText: size <= 15 }, { token: "--ink", failing: [], fitsCardText: true });
 });
 
-test("a started next card has a solid border, and the next colour meets 3:1 on the card", async () => {
-  const page = await readPage();
-  const [[border, card]] = resolvePairs(page, [["--status-next", "--card"]]);
-
-  const started = statusDeclarations(page, "next", "\\[data-started\\]");
-
-  assert.deepEqual({ solid: started.includes("border-style: solid"), meetsThreeToOne: contrastRatio(border, card) >= 3 }, { solid: true, meetsThreeToOne: true });
-});
-
 test("the visually hidden rule clips with clip-path inset(50%) and declares no deprecated clip", async () => {
   const page = await readPage();
 

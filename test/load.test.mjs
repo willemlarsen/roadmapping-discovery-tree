@@ -689,24 +689,6 @@ test("a next feature with one done and one next part shows Paused as its label w
   assert.deepEqual([label.textContent, label.children[0].textContent], ["Paused, 1 of 2 parts solved⏸", ", 1 of 2 parts solved"]);
 });
 
-test("after a load the started feature's card carries data-started and a plain next feature's card does not", async () => {
-  const entry = (id, parent, order, status, solved = {}) => ({ ...roadmap.problems[0], id, parent, order, status, ...solved });
-  const problems = [
-    entry("up-001", null, 1, "next"),
-    entry("up-002", "up-001", 1, "done", { doneOn: "2026-10-30", confirmedBy: "Willem" }),
-    entry("up-003", "up-001", 2, "next"),
-    entry("up-004", null, 2, "next"),
-  ];
-  const logText = problems.map(({ id, status }) => JSON.stringify(logLine(id, "coach-add", status))).join("\n");
-  const fetch = async (path) => (path.endsWith("roadmap.json") ? { ok: true, text: async () => JSON.stringify({ ...roadmap, wipLimit: 4, problems }) } : { ok: true, text: async () => logText });
-
-  const { shown } = await load(fetch);
-
-  const features = allElements(treeOf(shown)).filter((element) => element.tagName === "LI" && element.children[0].children.length > 1);
-  const started = (item) => item.children[0].attributes["data-started"];
-  assert.deepEqual([features[0], features[1]].map(started), ["", undefined]);
-});
-
 test("after a load a parent card shows the state its parts give it, not its own status", async () => {
   const entry = (id, parent, order, status, fields = {}) => ({ ...roadmap.problems[0], id, parent, order, status, ...fields });
   const problems = [

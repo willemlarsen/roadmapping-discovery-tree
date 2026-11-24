@@ -129,7 +129,6 @@ function shownState(node, view) {
 
 function stampCard(card, node, view) {
   card.setAttribute("data-status", shownState(node, view));
-  if (view.started?.has(node.id)) card.setAttribute("data-started", "");
   if (view.pulsing?.has(node.id)) card.setAttribute("data-pulse", "");
 }
 

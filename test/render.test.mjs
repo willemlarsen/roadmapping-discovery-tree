@@ -219,14 +219,6 @@ test("renderTree words a card shown paused from its parts Paused, with the pause
   assert.deepEqual([label.textContent, label.children.map((mark) => mark.attributes["aria-label"])], ["Paused⏸", ["Paused"]]);
 });
 
-test("renderTree stamps data-started on a card in view.started and on no other card", () => {
-  const view = { started: new Map([["up-001", "1 of 2 parts solved"]]) };
-
-  const items = renderTree(nestedTree, createFakeDocument(), view).children[1].children;
-
-  assert.deepEqual(items.map((item) => item.children[0].attributes["data-started"]), ["", undefined]);
-});
-
 test("renderTree labels a started card with its shown state and the part count in a visually hidden span", () => {
   const next = (id, order) => ({ id, problem: `Problem ${id}`, status: "next", order, children: [] });
   const view = { started: new Map([["up-001", "1 of 2 parts solved"]]), shown: new Map([["up-001", "paused"]]) };
