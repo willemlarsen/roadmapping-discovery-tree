@@ -380,6 +380,37 @@ test("a workspace page opened with ?product=beta whose tree is wider than its ma
   assert.deepEqual(layout, { pageOverflow: 0, containerOverflow: 0, headerMovedBy: 0, treeScrolls: true, treeScrolled: true });
 });
 
+const ARROW_RIGHT = { key: "ArrowRight", code: "ArrowRight", windowsVirtualKeyCode: 39 };
+const CARD_TREE_FOCUS = `(() => {
+  const focused = document.activeElement;
+  const ring = getComputedStyle(focused);
+  return { name: focused.getAttribute("aria-label"), ring: ring.outlineStyle, ringWidth: parseFloat(ring.outlineWidth), scrollLeft: focused.scrollLeft };
+})()`;
+
+async function cardTreeByKeyboard(send) {
+  await evaluate(pollUntilFound(ROADMAP_CARDS, "() => true"))(send);
+  for (let presses = 0; presses < 5 && (await evaluate(CARD_TREE_FOCUS)(send)).name !== "Card tree"; presses++) await press(send, TAB);
+  const focused = await evaluate(CARD_TREE_FOCUS)(send);
+  for (let presses = 0; presses < 5; presses++) await press(send, ARROW_RIGHT);
+  // Arrow-key scrolling is smooth, so give it a moment to move.
+  const scrolled = await evaluate(`new Promise((resolve) => setTimeout(() => resolve(document.activeElement.scrollLeft), 500))`)(send);
+  return { ...focused, scrolledByArrows: scrolled > focused.scrollLeft };
+}
+
+test("on the tree page and a workspace page, Tab reaches a wide tree's Card tree region, which draws a solid focus ring of at least 2px, and the right arrow key scrolls it sideways", async () => {
+  const overrides = await portfolioOverrides();
+  for (const file of ["roadmap.json", "decisions.jsonl"]) overrides.set(`/products/beta/roadmap/${file}`, await readFile(join(ROOT, "roadmap", file)));
+  const server = await serveRepo(overrides);
+  const urls = [`http://127.0.0.1:${server.address().port}/strip/index.html`, workspaceUrl(server, "beta")];
+
+  const seen = [];
+  for (const url of urls) seen.push(await withPage(url, cardTreeByKeyboard, { width: ZOOMED_WIDTH }));
+  server.close();
+
+  const expected = { name: "Card tree", ring: "solid", wideRing: true, scrolledByArrows: true };
+  assert.deepEqual(seen.map(({ name, ring, ringWidth, scrolledByArrows }) => ({ name, ring, wideRing: ringWidth >= 2, scrolledByArrows })), [expected, expected]);
+});
+
 const PULSE_NAMES = pollUntilFound(ROADMAP_CARDS, `(cards) => {
   const names = {};
   for (const card of cards) names[card.textContent.slice(0, 40)] = [card.getAttribute("data-status"), getComputedStyle(card).animationName];

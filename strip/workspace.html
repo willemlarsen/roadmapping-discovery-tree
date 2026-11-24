@@ -12,6 +12,7 @@
   /* The page's only sideways scroller. Its padding keeps the cards' rings inside the clip; the
      matching negative margin keeps the tree where it was. */
   section[aria-label="Roadmap"] > [role="region"] { overflow-x: auto; padding: 10px; margin: -10px; }
+  section[aria-label="Roadmap"] > [role="region"]:focus-visible { outline: var(--ring-width) solid var(--focus-ring); outline-offset: var(--ring-offset); }
   section[aria-label="Roadmap"] > h1 { text-align: center; font-size: 20px; margin: 0 auto 24px; max-width: 320px;
     background: var(--title-bg); border: 2px solid var(--title-edge); border-radius: 8px; padding: 10px 14px; }
   section[aria-label="Roadmap"] ul { display: flex; justify-content: safe center; list-style: none; margin: 0; padding: 22px 0 0; position: relative; }
