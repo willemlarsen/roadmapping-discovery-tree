@@ -42,6 +42,19 @@ reads plainly: "Waiting" rather than "Waiting on …", "Paused" rather than "Res
 "Solved ✓" without a date, or "Parked". When the card's own status already carries the detail,
 the detail shows.
 
+The tree sits in its own region, named "Card tree", which is the only part of the page that
+scrolls sideways. When the tree is wider than the window it scrolls inside that region, so the
+status line, the goal and everything above the tree stay where they are; at phone width the
+tree stacks into a column and nothing scrolls sideways. Tab reaches the region and the arrow
+keys scroll it. When the roadmap changes while the page is open, the redrawn tree keeps the
+reader's sideways place and focus.
+
+Above the goal, a reading guide says how long ago the roadmap last changed (from the newest
+decision-log entry, at the time the page read it) and holds a closed "How to read this
+roadmap" section. Opened, it explains each card state in the words the cards use, how a card
+with parts takes its state from them, what "85% likely" means when the cards show a forecast,
+and that every change is written to the decision log.
+
 A portfolio page (`strip/portfolio.html`) lists every active product in the registry with the
 problems it is solving now, and links to each product's tree.
 
