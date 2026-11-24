@@ -29,6 +29,10 @@ test("freshnessLine names one of a unit in the singular", () => {
   ]);
 });
 
+test("freshnessLine has no line for an empty decision log", () => {
+  assert.equal(freshnessLine([], NOW), null);
+});
+
 test("freshnessLine says just now under a minute, and for a decision stamped ahead of this clock", () => {
   const ages = ["2026-11-20T11:59:30Z", "2026-11-20T12:05:00Z"];
 

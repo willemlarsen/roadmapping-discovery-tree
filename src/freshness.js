@@ -9,6 +9,7 @@ const UNITS = [
 ];
 
 export function freshnessLine(entries, now) {
+  if (entries.length === 0) return null;
   const newest = Math.max(...entries.map((entry) => Date.parse(entry.at)));
   return `Roadmap last changed ${agoWords(Date.parse(now) - newest)}`;
 }
