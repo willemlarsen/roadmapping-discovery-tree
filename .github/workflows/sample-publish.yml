@@ -1,0 +1,46 @@
+name: sample publish
+on:
+  schedule:
+    - cron: "17 12 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: sample-publish
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.repository == 'willemlarsen/roadmapping-discovery-tree' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: main
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+      - run: npm run sample-history
+      - run: npm test
+      - name: commit the refreshed sample forecasts
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add roadmap/pace.json products/seed-library/roadmap/pace.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Samples: refresh the sample forecasts for today"
+            git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:refs/heads/main
+          fi
+      - name: publish the garden sample to the share page
+        env:
+          SHARE_PUBLISH_KEY: ${{ secrets.SHARE_PUBLISH_KEY }}
+          SHARE_URL: ${{ vars.SHARE_URL }}
+        run: node scripts/publish-share.mjs --product garden-planner-sample --roadmap roadmap/roadmap.json --url "$SHARE_URL"
