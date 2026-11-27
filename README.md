@@ -4,11 +4,7 @@
 
 A small sample of code built by AI agents under the ClickChain governance model. **Live demo:** [the sample roadmap in the current ClickChain Roadmap UI](https://clickchain.ai/share/5hXr_CUIuDq8DjYQFQJf1Z4radCu_n49r5jwnyHWX0A) (best viewed on a laptop), published from this repository's sample data once a day by `.github/workflows/sample-publish.yml`. The pages in `strip/` are an early version of that UI, kept as a code sample: [discovery tree](https://willemlarsen.github.io/roadmapping-discovery-tree/strip/index.html) · [portfolio](https://willemlarsen.github.io/roadmapping-discovery-tree/strip/portfolio.html) (served by GitHub Pages)
 
-![The discovery tree for the sample Community Garden Planner roadmap](docs/screenshot.jpg)
-
-![The sample roadmap changing as the replay script steps through six made-up decisions: cards move to solving now, parts are solved, a re-rank, and the Recent decisions list fills in](docs/replay.gif)
-
-*The animation is the real page, redrawing itself while `scripts/replay.mjs` changes a copy of the sample data (see [Watch it change](#watch-it-change)).*
+![The sample Community Garden Planner roadmap in the current ClickChain Roadmap UI: solved, solving now, next, paused, waiting, later and parked cards](docs/screenshot.jpg)
 
 A roadmap viewer that shows a product's work as a discovery tree: the goal at the root, the user
 problems beneath it, and the parts of each problem beneath that. Each card shows its status
