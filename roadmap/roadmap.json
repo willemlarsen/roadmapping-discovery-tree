@@ -55,6 +55,7 @@
       "slices": ["task-list", "watering-reminders"],
       "waitingOn": null,
       "resumesAfter": null,
+      "doneOn": null,
       "value": 8,
       "size": 5
     },
@@ -67,7 +68,8 @@
       "order": 1,
       "slices": ["task-list"],
       "waitingOn": null,
-      "resumesAfter": null
+      "resumesAfter": null,
+      "doneOn": null
     },
     {
       "id": "gp-022",
@@ -78,7 +80,8 @@
       "order": 2,
       "slices": ["watering-reminders"],
       "waitingOn": null,
-      "resumesAfter": null
+      "resumesAfter": null,
+      "doneOn": null
     },
     {
       "id": "gp-006",
@@ -90,6 +93,7 @@
       "slices": ["harvest-log"],
       "waitingOn": null,
       "resumesAfter": null,
+      "doneOn": null,
       "value": 5,
       "size": 2
     },
@@ -103,6 +107,7 @@
       "slices": ["plot-sharing"],
       "waitingOn": "The garden committee's plot-allocation rules",
       "resumesAfter": null,
+      "doneOn": null,
       "value": 5,
       "size": 3
     },
@@ -116,6 +121,7 @@
       "slices": ["rotation-planner"],
       "waitingOn": null,
       "resumesAfter": "gp-002",
+      "doneOn": null,
       "value": 3,
       "size": 5
     },
@@ -128,7 +134,8 @@
       "order": 6,
       "slices": ["planting-calendar"],
       "waitingOn": null,
-      "resumesAfter": null
+      "resumesAfter": null,
+      "doneOn": null
     },
     {
       "id": "gp-007",
@@ -140,6 +147,7 @@
       "slices": ["member-welcome"],
       "waitingOn": null,
       "resumesAfter": null,
+      "doneOn": null,
       "value": 3,
       "size": 3
     },
@@ -165,7 +173,8 @@
       "order": 2,
       "slices": ["member-welcome"],
       "waitingOn": null,
-      "resumesAfter": null
+      "resumesAfter": null,
+      "doneOn": null
     }
   ]
 }

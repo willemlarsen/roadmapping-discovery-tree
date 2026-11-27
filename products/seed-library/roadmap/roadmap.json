@@ -29,6 +29,7 @@
       "slices": ["checkout"],
       "waitingOn": null,
       "resumesAfter": null,
+      "doneOn": null,
       "value": 8,
       "size": 3
     },
@@ -42,6 +43,7 @@
       "slices": ["returns-log"],
       "waitingOn": null,
       "resumesAfter": null,
+      "doneOn": null,
       "value": 5,
       "size": 3
     }
