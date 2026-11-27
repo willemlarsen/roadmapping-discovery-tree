@@ -1,4 +1,4 @@
-/* The discovery tree and the boxes around it, shared by index.html and workspace.html. Each page
+/* The discovery tree and the boxes around it, shared by index.html, workspace.html and portfolio.html. Each page
    defines the colour tokens on :root and, after this file, its own layout and box styles. */
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.4 -apple-system, "Segoe UI", sans-serif; }
@@ -60,3 +60,5 @@ section[aria-label="Recent decisions"] > h2 { margin: 0 0 6px; }
   section[aria-label="Roadmap"] li::before, section[aria-label="Roadmap"] li::after, section[aria-label="Roadmap"] ul ul::before { display: none; }
   section[aria-label="Roadmap"] li > div { width: auto; }
 }
+/* The banner that marks these pages as an early version of the current Roadmap UI. */
+.early-version { margin: 0; padding: 10px 16px; text-align: center; font-size: 13px; background: var(--card); color: var(--ink); border-bottom: 1px solid var(--line); }

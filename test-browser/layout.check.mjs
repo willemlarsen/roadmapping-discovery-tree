@@ -190,7 +190,7 @@ const CARD_WORDS = `new Promise((resolve) => {
     const started = cards.find((card) => card.textContent.includes(${JSON.stringify(STARTED_CARD)}));
     resolve({
       startedStatus: started?.getAttribute("data-status") ?? null,
-      startedHasLabel: started ? started.firstElementChild.firstChild.textContent === "Paused" && started.firstElementChild.textContent.includes(", 1 of 2 parts solved") && started.firstElementChild.querySelector("[data-visually-hidden]").getBoundingClientRect().width <= 1 && getComputedStyle(started.firstElementChild.querySelector("[data-visually-hidden]")).overflow === "hidden" : false,
+      startedHasLabel: started ? started.firstElementChild.firstChild.textContent === "Paused" && started.firstElementChild.textContent.includes(", 2 of 4 parts solved") && started.firstElementChild.querySelector("[data-visually-hidden]").getBoundingClientRect().width <= 1 && getComputedStyle(started.firstElementChild.querySelector("[data-visually-hidden]")).overflow === "hidden" : false,
       forecasts: cards.filter((card) => ["now", "next"].includes(card.getAttribute("data-status"))).map((card) => card.textContent.includes("working hour")),
       dated: cards.filter((card) => /\\d{4}-\\d{2}-\\d{2}/.test(card.textContent.replace(/Solved[^.]*/g, ""))).map((card) => card.textContent.slice(0, 60)),
     });
@@ -266,7 +266,7 @@ test("a started label's hidden part count reaches Chrome's accessibility tree as
 
   const exposed = await chromeLabelText(url).finally(() => server.close());
 
-  assert.deepEqual(exposed, ["PAUSED", ", 1 of 2 parts solved", "⏸"]);
+  assert.deepEqual(exposed, ["PAUSED", ", 2 of 4 parts solved", "⏸"]);
 });
 
 test("serveRepo serves an override body for its path instead of the repo file", async () => {

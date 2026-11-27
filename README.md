@@ -2,7 +2,7 @@
 
 [![test](https://github.com/willemlarsen/roadmapping-discovery-tree/actions/workflows/test.yml/badge.svg)](https://github.com/willemlarsen/roadmapping-discovery-tree/actions/workflows/test.yml)
 
-A small sample of code built by AI agents under the ClickChain governance model. **Read-only view:** [discovery tree](https://willemlarsen.github.io/roadmapping-discovery-tree/strip/index.html) · [portfolio](https://willemlarsen.github.io/roadmapping-discovery-tree/strip/portfolio.html) (sample data, served by GitHub Pages)
+A small sample of code built by AI agents under the ClickChain governance model. **Live demo:** [the sample roadmap in the current ClickChain Roadmap UI](https://clickchain.ai/share/5hXr_CUIuDq8DjYQFQJf1Z4radCu_n49r5jwnyHWX0A), published from this repository's sample data once a day by `.github/workflows/sample-publish.yml`. The pages in `strip/` are an early version of that UI, kept as a code sample: [discovery tree](https://willemlarsen.github.io/roadmapping-discovery-tree/strip/index.html) · [portfolio](https://willemlarsen.github.io/roadmapping-discovery-tree/strip/portfolio.html) (served by GitHub Pages)
 
 ![The discovery tree for the sample Community Garden Planner roadmap](docs/screenshot.jpg)
 
